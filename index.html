@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Soft Days — a period companion</title>
+<style>
+  :root{
+    --ink:#4a3341; --ink-soft:#7c6675; --card:rgba(255,255,255,.74); --line:rgba(180,140,170,.25);
+    --rose:#f28ba8; --rose-d:#e0688b; --lilac:#b39ddb; --mint:#8fd3c0; --amber:#f2b06a;
+    --shadow:0 10px 30px rgba(180,120,150,.18); --r:22px;
+    --bg1:#fff1f3; --bg2:#f3eaff; --bg3:#e8f5f1; --page:#fdf8fb;
+  }
+  [data-theme="dusk"]{ --bg1:#ede2ff; --bg2:#e6d9fb; --bg3:#ffe6f0; --page:#f6f0fb; --rose:#c98bd9; --lilac:#9e86d9; }
+  [data-theme="sea"]{ --bg1:#e2f4f5; --bg2:#dcecff; --bg3:#e8fbf3; --page:#f2fbfc; --rose:#5fb8c9; --lilac:#7fa8d9; --rose-d:#3f96a8; }
+  [data-theme="cocoon"]{ --bg1:#f7e9db; --bg2:#f2ddc8; --bg3:#fbeee0; --page:#faf3e9; --rose:#d99a6c; --lilac:#c9a27c; --ink:#4a3a2c; --ink-soft:#8a7259; --rose-d:#b97b4c; }
+  [data-theme="night"]{ --bg1:#1c1420; --bg2:#20161f; --bg3:#1a1620; --page:#171019; --card:rgba(40,28,38,.78);
+    --line:rgba(255,200,220,.14); --ink:#f1dbe6; --ink-soft:#b79aab; --rose:#e08aa0; --rose-d:#e08aa0; --lilac:#9b86c9; --amber:#e0a866;
+    --shadow:0 10px 34px rgba(0,0,0,.45); }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);min-height:100vh;
+    background:
+      radial-gradient(1200px 700px at 10% -10%, var(--bg1), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, var(--bg2), transparent 55%),
+      radial-gradient(900px 800px at 50% 110%, var(--bg3), transparent 60%), var(--page);
+    background-size:180% 180%; animation:drift 26s ease-in-out infinite;
+    padding:20px 14px 130px; transition:background-color .6s,color .4s;}
+  @keyframes drift{0%,100%{background-position:0% 0%}50%{background-position:60% 40%}}
+  @media (prefers-reduced-motion:reduce){ body{animation:none} *{animation-duration:.001s !important; transition-duration:.15s !important} }
+  .wrap{max-width:940px;margin:0 auto}
+  header{text-align:center;margin:6px 0 20px;position:relative}
+  h1{font-size:clamp(26px,5vw,40px);margin:0;font-weight:600}
+  h1 span{background:linear-gradient(90deg,var(--rose-d),var(--lilac));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--ink-soft);margin-top:8px;font-size:15px}
+  .topctrl{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .chip{font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);cursor:pointer}
+  .chip.on{background:linear-gradient(120deg,var(--rose),var(--lilac));color:#fff;border-color:transparent}
+  .card{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);
+    padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+  h2{font-size:18px;margin:0 0 4px;font-weight:600}
+  .hint{color:var(--ink-soft);font-size:13px;margin:0 0 14px;line-height:1.5}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:999px;padding:12px 20px;font-size:14px;
+    background:var(--card);color:var(--ink);border:1px solid var(--line);transition:.15s;min-height:44px}
+  button:active{transform:scale(.96)}
+  button.primary{background:linear-gradient(120deg,var(--rose),var(--lilac));color:#fff;border:none;font-weight:600}
+  .row{display:flex;flex-wrap:wrap;gap:10px}
+  nav{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 14px;justify-content:center;flex-wrap:wrap;-webkit-overflow-scrolling:touch}
+  nav button{min-width:52px}
+  nav button.on{background:linear-gradient(120deg,var(--rose),var(--lilac));color:#fff;border:none}
+  section.page{display:none} section.page.on{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .garden{display:flex;flex-wrap:wrap;gap:8px;min-height:60px;align-items:flex-end;
+    background:linear-gradient(180deg,transparent,rgba(143,211,192,.16));border-radius:16px;padding:12px}
+  .garden span{font-size:26px}
+  .bar{height:10px;background:rgba(180,140,170,.18);border-radius:99px;overflow:hidden;margin-top:10px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--lilac));width:0;transition:width .6s}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .stat{flex:1;min-width:100px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:20px;color:var(--rose-d)} .stat small{color:var(--ink-soft)}
+  .moods{display:flex;gap:10px;flex-wrap:wrap}
+  .mood{font-size:26px;padding:10px 14px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+  .mood.on{background:linear-gradient(120deg,var(--rose),var(--lilac))}
+  .moodResponse{display:none;margin-top:16px;padding:18px 10px 20px;border-radius:20px;
+    background:linear-gradient(180deg,rgba(242,139,168,.08),rgba(179,157,219,.08));min-height:40px}
+  .moodResponse.on{display:block;animation:fade .4s ease}
+  .sparkleWrap{position:relative;height:60px}
+  .sparkle{position:absolute;font-size:20px;opacity:0;animation:sparkleUp 1.1s ease forwards}
+  @keyframes sparkleUp{0%{opacity:0;transform:translateY(10px) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translateY(-38px) scale(1.1)}}
+
+  /* ---- companion character ---- */
+  .companionWrap{text-align:center}
+  .companion{width:132px;height:132px;border-radius:50%;margin:0 auto;position:relative;cursor:pointer;
+    background:radial-gradient(circle at 32% 28%,#fff,var(--rose) 55%,var(--lilac));
+    box-shadow:0 10px 30px rgba(200,100,150,.35);transition:transform .18s ease;
+    animation:cBreathe 3.6s ease-in-out infinite}
+  .companion:active{transform:scale(.94)}
+  .companion.petting{animation:cWiggle .5s ease}
+  @keyframes cBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+  @keyframes cWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg) scale(1.05)}75%{transform:rotate(4deg) scale(1.05)}}
+  .cEye{position:absolute;width:11px;height:11px;background:#40283a;border-radius:50%;top:50px;transition:height .1s,top .1s}
+  .cEye.l{left:42px}.cEye.r{left:79px}
+  .companion.blink .cEye{height:2px;top:55px}
+  .cMouth{position:absolute;left:50%;top:78px;width:26px;height:10px;background:#40283a;transform:translateX(-50%);
+    border-radius:0 0 16px 16px;transition:all .12s}
+  .companion.mood-hurting .cMouth{border-radius:16px 16px 0 0;top:82px;background:#5a3244}
+  .companion.mood-weepy .cMouth{border-radius:16px 16px 0 0;top:84px;width:18px;height:8px}
+  .companion.mood-irritable .cMouth{width:22px;height:5px;border-radius:3px;top:80px}
+  .companion.mood-exhausted .cEye{height:3px}
+  .companion.mood-low .cMouth{border-radius:16px 16px 0 0;top:83px;width:20px}
+  .companion.mood-okay .cMouth{border-radius:0 0 18px 18px;width:30px;height:13px}
+  .companion.mood-calm .cMouth{border-radius:0 0 18px 18px;width:28px;height:9px}
+  .companion.talking .cMouth{animation:cTalk .28s steps(1) infinite}
+  @keyframes cTalk{0%,100%{height:10px}50%{height:4px}}
+  .cName{font-size:12px;color:var(--ink-soft);margin-top:8px;letter-spacing:.5px}
+  .cBubble{background:#fff;color:#3a2430;border-radius:16px;padding:12px 16px;margin:12px auto 0;max-width:420px;
+    font-size:15px;line-height:1.55;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.08);min-height:24px}
+  [data-theme="night"] .cBubble{background:#2c1f28;color:#f1dbe6}
+  .cBubble:before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    border-width:0 8px 8px 8px;border-style:solid;border-color:transparent transparent #fff transparent}
+  [data-theme="night"] .cBubble:before{border-color:transparent transparent #2c1f28 transparent}
+  .cActions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+  .cActions button{font-size:13px;padding:9px 14px}
+  .cChatLog{max-width:460px;margin:12px auto 0;text-align:left;display:flex;flex-direction:column;gap:8px}
+  .cMsg{padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.5;max-width:80%}
+  .cMsg.her{align-self:flex-end;background:linear-gradient(120deg,var(--rose),var(--lilac));color:#fff;border-bottom-right-radius:4px}
+  .cMsg.it{align-self:flex-start;background:#fff;color:#3a2430;border-bottom-left-radius:4px}
+  [data-theme="night"] .cMsg.it{background:#2c1f28;color:#f1dbe6}
+  .cInputRow{display:flex;gap:8px;max-width:460px;margin:12px auto 0}
+  .cInputRow input{flex:1;border-radius:999px;border:1px solid var(--line);padding:10px 16px;font-family:inherit;
+    font-size:14px;background:var(--card);color:var(--ink)}
+  .orb{width:min(170px,42vw);height:min(170px,42vw);border-radius:50%;margin:0 auto;
+    background:radial-gradient(circle at 32% 30%,#fff,var(--rose) 60%,var(--lilac));
+    box-shadow:0 0 60px rgba(242,139,168,.5);transition:transform 4s ease-in-out;display:grid;place-items:center;
+    color:#fff;font-size:14px;letter-spacing:1.5px;text-align:center;padding:10px}
+  .relief{display:grid;gap:10px}
+  .tip{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;align-items:flex-start}
+  .tip em{font-style:normal;font-size:22px} .tip b{display:block;margin-bottom:2px} .tip small{color:var(--ink-soft);line-height:1.5}
+  .timer{font-size:40px;text-align:center;font-variant-numeric:tabular-nums;color:var(--rose-d);margin:6px 0}
+  #bubbleBoard{position:relative;height:300px;border-radius:18px;overflow:hidden;
+    background:linear-gradient(180deg,var(--bg1),var(--bg2));border:1px solid var(--line);touch-action:none}
+  .bub{position:absolute;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.95),rgba(242,139,168,.55));
+    box-shadow:inset 0 0 14px rgba(255,255,255,.7)}
+  .affirm{font-size:19px;line-height:1.7;text-align:center;padding:18px 6px;min-height:64px}
+  textarea{width:100%;min-height:100px;border-radius:16px;border:1px solid var(--line);padding:12px;
+    font-family:inherit;font-size:14px;resize:vertical;background:var(--card);color:var(--ink)}
+  .entry{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px;font-size:14px}
+  .entry time{display:block;color:var(--ink-soft);font-size:12px;margin-bottom:4px}
+  .palette{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .swatch{aspect-ratio:1;border-radius:16px;border:1px solid var(--line);background:#fff;font-size:22px}
+  .days{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .day{width:32px;height:32px;border-radius:12px;display:grid;place-items:center;font-size:11px;background:var(--card);border:1px solid var(--line)}
+  .day.on{background:linear-gradient(120deg,var(--rose),var(--lilac));color:#fff;border:none}
+  footer{text-align:center;color:var(--ink-soft);font-size:13px;margin-top:26px;line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(140px);
+    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 20px;
+    box-shadow:var(--shadow);transition:.4s;z-index:60;font-size:14px;max-width:88vw;text-align:center}
+  .toast.show{transform:translateX(-50%)}
+  .glow{position:fixed;inset:0;pointer-events:none;z-index:5;background:radial-gradient(circle at 50% 20%,rgba(242,139,168,.25),transparent 60%);
+    opacity:0;transition:opacity .35s}
+  /* panic button */
+  #panic{position:fixed;right:16px;bottom:16px;z-index:70;border-radius:999px;padding:16px 20px;
+    background:linear-gradient(120deg,var(--rose-d),var(--lilac));color:#fff;font-weight:700;font-size:14px;
+    box-shadow:0 8px 26px rgba(200,90,130,.45);border:none}
+  #panicOverlay{position:fixed;inset:0;background:rgba(15,8,14,.55);backdrop-filter:blur(6px);z-index:90;
+    display:none;align-items:flex-end;justify-content:center;padding:0}
+  #panicOverlay.on{display:flex}
+  .panicSheet{background:var(--page);width:100%;max-width:640px;border-radius:26px 26px 0 0;padding:26px 20px 34px;
+    box-shadow:0 -10px 40px rgba(0,0,0,.3);max-height:88vh;overflow:auto}
+  .exBox{display:none} .exBox.on{display:block}
+  .exLine{font-size:21px;line-height:1.7;min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px}
+  .exBar{height:6px;background:rgba(180,140,170,.2);border-radius:99px;overflow:hidden;margin:14px 0}
+  .exBar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--lilac));width:0;transition:width linear}
+  .muteRow{display:flex;justify-content:center;gap:10px;margin-top:14px}
+  .sw{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  select,input[type=number],input[type=text]{font-family:inherit;border-radius:12px;border:1px solid var(--line);padding:8px 10px;background:var(--card);color:var(--ink)}
+
+  /* ---- forest ---- */
+  .durChip{border-radius:14px;padding:10px 16px;font-size:14px}
+  .durChip.on{background:linear-gradient(120deg,var(--mint),var(--rose));color:#fff;border:none}
+  .treeStage{font-size:min(120px,30vw);text-align:center;line-height:1;transition:transform .4s ease;user-select:none}
+  .growWrap{background:linear-gradient(180deg,transparent,rgba(143,211,192,.18));border-radius:20px;padding:20px 10px;text-align:center}
+  .growTimer{font-size:32px;text-align:center;font-variant-numeric:tabular-nums;color:var(--mint);margin:6px 0;font-weight:700}
+  .forestGrid{display:flex;flex-wrap:wrap;gap:6px;background:linear-gradient(180deg,rgba(143,211,192,.05),rgba(143,211,192,.18));
+    border-radius:16px;padding:14px;min-height:60px}
+  .forestGrid span{font-size:24px}
+  .withered{opacity:.5;filter:grayscale(.6)}
+
+  /* ---- calendar ---- */
+  .calHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .calHead b{font-size:16px}
+  .calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .calDow{text-align:center;font-size:10px;color:var(--ink-soft);padding:2px 0}
+  .calCell{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:11px;gap:1px;padding:2px}
+  .calCell.empty{visibility:hidden}
+  .calCell.today{border:2px solid var(--rose-d)}
+  .calCell.period{background:linear-gradient(160deg,rgba(224,104,139,.28),rgba(224,104,139,.12))}
+  .calCell.predicted{background:repeating-linear-gradient(135deg,rgba(224,104,139,.14),rgba(224,104,139,.14) 4px,transparent 4px,transparent 8px)}
+  .calCell .cmood{font-size:13px}
+  .calCell .cstudy{position:absolute;bottom:2px;right:3px;font-size:8px;color:var(--mint);font-weight:700}
+  .calLegend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--ink-soft);margin-top:10px}
+  .legDot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  .sheetOverlay{position:fixed;inset:0;background:rgba(15,8,14,.55);backdrop-filter:blur(6px);z-index:90;
+    display:none;align-items:flex-end;justify-content:center}
+  .sheetOverlay.on{display:flex}
+  .logGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .logField{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+  .logField label{display:block;font-size:11px;color:var(--ink-soft);margin-bottom:4px}
+  .chipset{display:flex;flex-wrap:wrap;gap:6px}
+  .chipset button{padding:7px 12px;font-size:12px;min-height:auto}
+  .chipset button.on{background:linear-gradient(120deg,var(--rose),var(--lilac));color:#fff;border:none}
+  .statGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
+  @media(min-width:600px){.statGrid{grid-template-columns:repeat(4,1fr)}}
+
+  /* ---- 10 more games ---- */
+  .lantern{position:absolute;bottom:10px;font-size:34px;opacity:0;z-index:1;pointer-events:none}
+  .hugBox{border-radius:22px;padding:50px 20px;text-align:center;font-size:15px;color:var(--ink-soft);
+    background:linear-gradient(180deg,rgba(179,157,219,.10),rgba(242,139,168,.10));border:1px solid var(--line);
+    user-select:none;touch-action:none;transition:transform .3s,box-shadow .3s}
+  .hugBox.pressing{transform:scale(.97);box-shadow:inset 0 0 40px rgba(179,157,219,.35)}
+  .stressBall{font-size:90px;display:inline-block;transition:transform .12s;user-select:none;touch-action:none}
+  .padGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .padCell{aspect-ratio:1;border-radius:16px;border:1px solid var(--line);
+    background:linear-gradient(160deg,rgba(242,139,168,.16),rgba(179,157,219,.16));cursor:pointer;transition:.08s;touch-action:none}
+  .padCell.hit{background:linear-gradient(160deg,var(--rose),var(--lilac));transform:scale(.93)}
+  .jarWrap{margin-top:14px;border-radius:18px 18px 60px 60px;border:3px solid var(--line);border-top:none;
+    min-height:120px;background:linear-gradient(180deg,rgba(143,211,192,.06),rgba(143,211,192,.16));
+    padding:14px;display:flex;align-items:flex-end}
+  .jarStones{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+  .jarStones span{font-size:20px}
+  .chimeRow{display:flex;justify-content:center;gap:16px;padding:16px 6px 6px}
+  .chime{font-size:36px;transform-origin:top center;animation:chimeSway 3.6s ease-in-out infinite;cursor:pointer;touch-action:none}
+  .chime:nth-child(2n){animation-duration:4.2s}
+  .chime:nth-child(3n){animation-duration:3.1s}
+  @keyframes chimeSway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  .chime.ring{animation:chimeRing .5s ease}
+  @keyframes chimeRing{0%{transform:rotate(0)}25%{transform:rotate(-18deg)}50%{transform:rotate(14deg)}75%{transform:rotate(-8deg)}100%{transform:rotate(0)}}
+</style>
+</head>
+<body>
+<div class="glow" id="glow"></div>
+<div class="wrap">
+
+<header>
+  <h1>Hi there <span>✿</span></h1>
+  <p class="sub" id="greet">A soft place that's only yours. Nothing here keeps score.</p>
+  <div class="topctrl">
+    <button class="chip" id="soundToggle">🔊 Sound on</button>
+    <button class="chip" id="hapticToggle">📳 Vibration on</button>
+    <select id="themeSel" aria-label="Theme">
+      <option value="auto">Theme: Auto</option>
+      <option value="dawn">Dawn</option>
+      <option value="dusk">Dusk</option>
+      <option value="sea">Sea</option>
+      <option value="cocoon">Cocoon</option>
+      <option value="night">Deep night</option>
+    </select>
+  </div>
+</header>
+
+<nav id="nav">
+  <button data-p="home" class="on">🏡</button>
+  <button data-p="relief">🌸 Relief</button>
+  <button data-p="breathe">🫧 Breathe</button>
+  <button data-p="play">🎮 Play</button>
+  <button data-p="forest">🌲 Forest</button>
+  <button data-p="mind">💌 Mind</button>
+  <button data-p="track">📅 Track</button>
+  <button data-p="doctor">🩺 Doctor</button>
+</nav>
+
+<!-- HOME -->
+<section class="page on" id="home">
+  <div class="card">
+    <h2>Your garden</h2>
+    <p class="hint">It grows when you take care of yourself here. It never wilts, and it never resets — there is no losing.</p>
+    <div class="garden" id="garden"></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="stats">
+      <div class="stat"><b id="sPoints">0</b><small>soft moments</small></div>
+      <div class="stat"><b id="sVisits">0</b><small>times you came here</small></div>
+      <div class="stat"><b id="sLevel">Seedling</b><small>garden stage</small></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>How are you, right now?</h2>
+    <p class="hint">No wrong answer. Nothing you tap is wrong or too much.</p>
+    <div class="moods" id="moods"></div>
+    <div class="moodResponse" id="moodResponse"></div>
+  </div>
+
+  <div class="card">
+    <h2>If you only do one thing today</h2>
+    <p class="hint">Optional. Tapping "not today" counts exactly the same as doing it.</p>
+    <div class="relief" id="todo"></div>
+  </div>
+</section>
+
+<!-- RELIEF -->
+<section class="page" id="relief">
+  <div class="card">
+    <h2>Warmth — the strongest tool you have</h2>
+    <p class="hint">In trials, continuous low heat works about as well as ibuprofen for period pain. Heat opens the blood vessels prostaglandins have clamped shut — less starvation, less pain.</p>
+    <div class="timer" id="tDisp">15:00</div>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="tStart">Start warmth timer</button>
+      <button id="tReset">Reset</button>
+    </div>
+    <p class="hint" style="margin-top:12px">Always a layer of fabric between heat and skin. Two-thirds fill a hot water bottle with hot (not boiling) water. Never fall asleep on a plugged-in heat pad.</p>
+  </div>
+
+  <div class="card">
+    <h2>Guided relief, step by step</h2>
+    <p class="hint">Real techniques with real evidence behind them. Each one is a full guided session with sound and rhythm — tap to begin.</p>
+    <div class="relief" id="reliefList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Food & drink that actually helps</h2>
+    <div class="relief" id="nutrition"></div>
+  </div>
+</section>
+
+<!-- BREATHE -->
+<section class="page" id="breathe">
+  <div class="card">
+    <h2>4·7·8 breathing</h2>
+    <p class="hint">Slows your heart, softens cramping. Follow the orb — it breathes with sound and, if enabled, gentle vibration.</p>
+    <div class="orb" id="orb">ready</div>
+    <p id="bCount" style="color:var(--ink-soft);margin:12px 0 0;text-align:center">0 rounds</p>
+    <div class="row" style="justify-content:center;margin-top:10px"><button class="primary" id="bBtn">Begin</button></div>
+  </div>
+  <div class="card">
+    <h2>Box breathing for a pain spike</h2>
+    <p class="hint">In 4 · hold 4 · out 4 · hold 4. Faster to reset a spike than 4-7-8.</p>
+    <div class="row" style="justify-content:center"><button class="primary" id="boxBtn">Begin box breathing</button></div>
+  </div>
+  <div class="card">
+    <h2>5-4-3-2-1 grounding</h2>
+    <p class="hint">When your head is loud, come back to the room.</p>
+    <div class="row" style="justify-content:center"><button class="primary" id="gBtn">Begin</button></div>
+  </div>
+</section>
+
+<!-- PLAY -->
+<section class="page" id="play">
+  <div class="card">
+    <h2>Bubble pop</h2>
+    <p class="hint">Mindless, satisfying, no score that matters. Each pop is a soft musical note and a tiny buzz.</p>
+    <div id="bubbleBoard"></div>
+    <div class="row" style="margin-top:12px;align-items:center">
+      <button class="primary" id="bubBtn">Start</button>
+      <span id="bubScore" style="color:var(--ink-soft)">popped: 0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Sand garden</h2>
+    <p class="hint">Drag your finger to rake grooves in sand. A quiet granular sound and gentle vibration follow your speed. Nothing to finish, nothing to get right.</p>
+    <canvas id="sand" style="width:100%;height:260px;border-radius:18px;border:1px solid var(--line);touch-action:none;display:block"></canvas>
+    <div class="row" style="margin-top:10px"><button id="sandClear">Smooth it flat again</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Colour breathing</h2>
+    <p class="hint">Tap the colour matching how you want to feel. The whole page listens.</p>
+    <div class="palette" id="palette"></div>
+    <p id="colMsg" class="hint" style="margin-top:12px"></p>
+  </div>
+
+  <div class="card">
+    <h2>The creature</h2>
+    <p class="hint">Stroke it. It purrs. It never needs anything from you, and it is never neglected — even if you never open this tab again.</p>
+    <div style="text-align:center;padding:16px">
+      <div id="creature" style="font-size:80px;display:inline-block;transition:transform .15s">🐈</div>
+    </div>
+    <p id="creatureMsg" class="hint" style="text-align:center"></p>
+  </div>
+
+  <div class="card">
+    <h2>Kaleidoscope</h2>
+    <p class="hint">Draw with one finger — it mirrors eight ways and rings a soft note as you go. Always symmetrical, always pretty, impossible to mess up.</p>
+    <canvas id="kaleido" style="width:100%;height:280px;border-radius:18px;border:1px solid var(--line);touch-action:none;display:block;background:#120c16"></canvas>
+    <div class="row" style="margin-top:10px"><button id="kaleidoClear">Clear the pattern</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Worry lantern</h2>
+    <p class="hint">Type a worry, or don't — leave it blank if you just want to release something wordless. Tap let go, and watch it drift away and disappear. Nothing is saved.</p>
+    <div class="row"><input type="text" id="lanternInput" placeholder="What's the worry? (optional)" style="flex:1;min-width:200px"></div>
+    <div class="growWrap" style="margin-top:12px;min-height:140px;position:relative;overflow:hidden" id="lanternSky">
+      <div class="row" style="justify-content:center;position:relative;z-index:2"><button class="primary" id="lanternRelease">Let it go</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Koi pond</h2>
+    <p class="hint">Tap or drag across the water. Just watch the fish for a while if you'd rather.</p>
+    <canvas id="koi" style="width:100%;height:260px;border-radius:18px;border:1px solid var(--line);touch-action:none;display:block"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>The hug</h2>
+    <p class="hint">Press and hold. It presses back, slowly, like a weighted blanket — then lets go just as slowly.</p>
+    <div class="hugBox" id="hugBox">press and hold</div>
+  </div>
+
+  <div class="card">
+    <h2>Stress ball</h2>
+    <p class="hint">Squeeze it. Hold as long as you want, let go whenever.</p>
+    <div style="text-align:center;padding:10px">
+      <div class="stressBall" id="stressBall">🟣</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Rhythm pad</h2>
+    <p class="hint">Tap anywhere. Every combination sounds musical — there's no wrong note here.</p>
+    <div class="padGrid" id="padGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>The blob</h2>
+    <p class="hint">Drag it around. It's soft, it wobbles, it never gets away from you.</p>
+    <canvas id="blob" style="width:100%;height:240px;border-radius:18px;border:1px solid var(--line);touch-action:none;display:block"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Your own sky</h2>
+    <p class="hint">Tap stars in any order to connect them. There's no correct constellation — it's yours.</p>
+    <canvas id="stars" style="width:100%;height:260px;border-radius:18px;border:1px solid var(--line);touch-action:none;display:block;background:#0c0a16"></canvas>
+    <div class="row" style="margin-top:10px"><button id="starsNew">New sky</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Gratitude jar</h2>
+    <p class="hint">One small good thing, if you have one. Doesn't have to be big.</p>
+    <div class="row"><input type="text" id="jarInput" placeholder="A small good thing…" style="flex:1;min-width:200px"></div>
+    <div class="row" style="margin-top:10px"><button class="primary" id="jarAdd">Drop it in</button></div>
+    <div class="jarWrap" id="jarWrap"><div class="jarStones" id="jarStones"></div></div>
+    <p class="hint" id="jarCount" style="text-align:center;margin-top:8px"></p>
+  </div>
+
+  <div class="card">
+    <h2>Wind chimes</h2>
+    <p class="hint">Tap a chime to ring it. Leave the breeze on and it'll ring one for you sometimes.</p>
+    <div class="chimeRow" id="chimeRow"></div>
+    <div class="row" style="margin-top:10px;align-items:center">
+      <button id="breezeToggle">🍃 Breeze: on</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOREST -->
+<section class="page" id="forest">
+  <div class="card">
+    <h2>Plant something</h2>
+    <p class="hint">Studying, resting on purpose, reading, revising — anything you want to give focused time to. Pick a length, plant a seed, and stay on this tab while it grows. Leave the tab and the tree withers — like the real Forest app, but the only thing at stake is a little emoji.</p>
+    <div class="row" id="durChips">
+      <button class="durChip on" data-min="10">10 min</button>
+      <button class="durChip" data-min="25">25 min</button>
+      <button class="durChip" data-min="45">45 min</button>
+      <button class="durChip" data-min="60">60 min</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input type="text" id="growLabel" placeholder="What for? (optional — e.g. Chemistry revision)" style="flex:1;min-width:200px">
+    </div>
+    <div class="growWrap" style="margin-top:14px">
+      <div class="treeStage" id="treeStage">🌰</div>
+      <div class="growTimer" id="growTimer">10:00</div>
+      <p class="hint" id="growHint" style="margin:0">Stay here and it grows on its own. Leaving the tab counts as walking away from it.</p>
+      <div class="row" style="justify-content:center;margin-top:10px">
+        <button class="primary" id="growStart">Plant & start</button>
+        <button id="growStop" style="display:none">Give up (it withers)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your forest</h2>
+    <p class="hint" id="forestSummary">Nothing planted yet — your first tree is one focused session away.</p>
+    <div class="forestGrid" id="forestGrid"></div>
+  </div>
+</section>
+
+<!-- MIND -->
+<section class="page" id="mind">
+  <div class="card">
+    <h2>A word for you</h2>
+    <div class="affirm" id="affirm">…</div>
+    <div class="row" style="justify-content:center"><button class="primary" id="aBtn">Another one</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Guided exercises</h2>
+    <p class="hint">Real CBT / ACT / DBT techniques, written plainly, with sound and rhythm to hold onto.</p>
+    <div class="relief" id="exList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Let it out</h2>
+    <p class="hint">Write whatever. It stays on this device — nobody else reads it, not even future-you unless she wants to.</p>
+    <textarea id="jText" placeholder="Today my body feels…"></textarea>
+    <div class="row" style="margin-top:10px"><button class="primary" id="jSave">Save</button></div>
+    <div id="jList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Why you feel like this</h2>
+    <p class="hint">It isn't drama. It's chemistry — and knowing that is genuinely useful.</p>
+    <div class="relief" id="facts"></div>
+  </div>
+</section>
+
+<!-- TRACK -->
+<section class="page" id="track">
+  <div class="card" id="syncCard">
+    <h2>Carry your data across devices</h2>
+    <p class="hint" id="syncHint">Right now everything lives only in this browser. Set a private passcode and it'll follow you to your phone, a new browser, anywhere — encrypted so only someone who knows this exact passcode can ever read it. Not even this app's server can see inside it.</p>
+    <div id="syncSetup">
+      <div class="row"><input type="password" id="syncPass" placeholder="Choose a private passcode" style="flex:1;min-width:200px" autocomplete="new-password"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="syncCreate">Set up sync with this passcode</button>
+        <button id="syncRestoreBtn">I already have a passcode — restore my data</button>
+      </div>
+      <p class="hint" style="margin-top:8px">There's no "forgot passcode" button. That's the trade-off for it being genuinely private — write it down somewhere only you can find it.</p>
+    </div>
+    <div id="syncActive" style="display:none">
+      <p id="syncStatusLine" style="margin:0 0 10px;font-size:15px;line-height:1.6">🔒 Synced — this data now follows your passcode across devices.</p>
+      <div class="row"><button id="syncOff">Stop syncing on this device</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Where you are right now</h2>
+    <div class="row"><button class="primary" id="startToday">Period started today</button></div>
+    <p id="cycleMsg" style="line-height:1.7"></p>
+  </div>
+
+  <div class="card">
+    <h2>This month, at a glance</h2>
+    <p class="hint">Tap any day to log symptoms, sleep, water and study time. Everything here stays on this device.</p>
+    <div class="calHead">
+      <button id="calPrev">‹</button>
+      <b id="calTitle">Month</b>
+      <button id="calNext">›</button>
+    </div>
+    <div class="calGrid" id="calDow"></div>
+    <div class="calGrid" id="calGrid" style="margin-top:4px"></div>
+    <div class="calLegend">
+      <span><i class="legDot" style="background:rgba(224,104,139,.5)"></i>period</span>
+      <span><i class="legDot" style="background:repeating-linear-gradient(135deg,rgba(224,104,139,.4),rgba(224,104,139,.4) 3px,transparent 3px,transparent 6px)"></i>predicted</span>
+      <span>🙂 mood logged</span>
+      <span style="color:var(--mint)">▮ study time</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your month in numbers</h2>
+    <div class="statGrid" id="monthStats"></div>
+  </div>
+
+  <div class="card">
+    <h2>Your mood, the last two weeks</h2>
+    <div class="garden" id="moodHist" style="background:none"></div>
+  </div>
+
+
+</section>
+
+<div class="sheetOverlay" id="daySheetOverlay">
+  <div class="panicSheet">
+    <h2 id="daySheetTitle" style="margin-top:0">Day</h2>
+    <div class="logGrid">
+      <div class="logField">
+        <label>Flow</label>
+        <div class="chipset" id="flowChips">
+          <button data-flow="">none</button>
+          <button data-flow="light">light</button>
+          <button data-flow="medium">medium</button>
+          <button data-flow="heavy">heavy</button>
+        </div>
+      </div>
+      <div class="logField">
+        <label>Cramp intensity</label>
+        <div class="chipset" id="crampChips">
+          <button data-cramp="0">0</button>
+          <button data-cramp="1">mild</button>
+          <button data-cramp="2">medium</button>
+          <button data-cramp="3">severe</button>
+        </div>
+      </div>
+      <div class="logField">
+        <label>Sleep (hours)</label>
+        <input type="number" id="sleepInput" min="0" max="14" step="0.5" style="width:100%">
+      </div>
+      <div class="logField">
+        <label>Water (glasses)</label>
+        <input type="number" id="waterInput" min="0" max="20" step="1" style="width:100%">
+      </div>
+      <div class="logField" style="grid-column:1/-1">
+        <label>Symptoms</label>
+        <div class="chipset" id="symChips"></div>
+      </div>
+      <div class="logField" style="grid-column:1/-1">
+        <label>Study / focus time this day</label>
+        <div id="dayStudySummary" class="hint" style="margin:0"></div>
+      </div>
+      <div class="logField" style="grid-column:1/-1">
+        <label>Notes</label>
+        <textarea id="dayNotes" style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="daySave">Save</button>
+      <button id="dayClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOCTOR -->
+<section class="page" id="doctor">
+  <div class="card" id="quizCard">
+    <h2>Quick body check-in</h2>
+    <p class="hint">Five taps, not a wall of reading. This turns into an actual next step for you — using your real logs, not generic advice.</p>
+    <div id="quizBox"></div>
+  </div>
+  <div class="card" id="outcomeCard" style="display:none">
+    <h2 id="outcomeTitle"></h2>
+    <div class="relief" id="outcomeBody"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="copyMsgBtn">Copy a message I can send someone</button>
+      <button id="retakeQuiz">Do the check-in again</button>
+    </div>
+    <p class="hint" id="copyConfirm" style="margin-top:8px"></p>
+  </div>
+</section>
+
+<footer>Made with care, for whoever needs it today 💗 · This app is comfort and information, never a diagnosis. If anything here ever conflicts with what a doctor tells you, trust the doctor.</footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="visually-hidden" id="srLive" aria-live="assertive"></div>
+
+<button id="panic">✦ It hurts right now</button>
+
+<div id="panicOverlay">
+  <div class="panicSheet">
+    <h2 style="margin-top:0">Fast things first</h2>
+    <p class="hint">Cold on your face, then a long slow exhale. This is the quickest thing in the whole app.</p>
+    <div class="exLine" id="panicLine" aria-live="assertive">Ready when you are.</div>
+    <div class="exBar"><i id="panicBar"></i></div>
+    <div class="row" style="justify-content:center">
+      <button class="primary" id="panicStart">Start</button>
+      <button id="panicClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= STATE ================= */
+const KEY="tanishka_soft_days_v2";
+const today=()=>new Date().toISOString().slice(0,10);
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||{
+  points:0,visits:0,garden:[],moods:{},journal:[],breaths:0,pops:0,cycleStart:null,cycleStarts:[],
+  soundOn:true,hapticOn:true,theme:"auto",done:{},forest:[],logs:{},gratitude:[],breezeOn:true
+};
+if(!S.cycleStarts) S.cycleStarts = S.cycleStart? [S.cycleStart] : [];
+if(!S.forest) S.forest=[];
+if(!S.logs) S.logs={};
+if(!S.gratitude) S.gratitude=[];
+if(S.breezeOn===undefined) S.breezeOn=true;
+const save=()=>{ localStorage.setItem(KEY,JSON.stringify(S)); if(typeof schedulePush==="function") schedulePush(); };
+const toast=(m)=>{const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");
+  clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove("show"),2400);};
+const srSay=(m)=>{document.getElementById("srLive").textContent=m;};
+
+/* ================= CROSS-DEVICE SYNC (end-to-end encrypted) =================
+   The server only ever stores {salt, iv, ciphertext} keyed by a one-way hash
+   of her passcode. Nobody without the passcode — including this app's own
+   server/database — can derive the AES key or read the contents. */
+const SYNC_PEPPER="soft-days-v2::";
+let syncKey=null, syncId=null, pushTimer=null, syncBusy=false;
+
+function b64(bytes){ return btoa(String.fromCharCode(...new Uint8Array(bytes))); }
+function unb64(str){ return Uint8Array.from(atob(str),c=>c.charCodeAt(0)); }
+async function sha256Hex(str){
+  const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function deriveKey(passcode, saltBytes){
+  const base=await crypto.subtle.importKey("raw", new TextEncoder().encode(passcode), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name:"PBKDF2", salt:saltBytes, iterations:150000, hash:"SHA-256" },
+    base, { name:"AES-GCM", length:256 }, true, ["encrypt","decrypt"]
+  );
+}
+async function armSession(passcode, saltBytes, id){
+  syncKey=await deriveKey(passcode, saltBytes); syncId=id;
+  const raw=await crypto.subtle.exportKey("raw", syncKey);
+  sessionStorage.setItem("sd_sync_active","1");
+  sessionStorage.setItem("sd_sync_id", id);
+  sessionStorage.setItem("sd_sync_salt", b64(saltBytes));
+  sessionStorage.setItem("sd_sync_rawkey", b64(raw));
+}
+function updateSyncUI(active){
+  const setup=document.getElementById("syncSetup"), on=document.getElementById("syncActive");
+  if(!setup) return;
+  setup.style.display=active?"none":"";
+  on.style.display=active?"":"none";
+}
+async function pushSyncNow(){
+  if(!syncKey || !syncId || syncBusy) return;
+  syncBusy=true;
+  try{
+    const saltB64=sessionStorage.getItem("sd_sync_salt");
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const enc=new TextEncoder().encode(JSON.stringify(S));
+    const cipherBuf=await crypto.subtle.encrypt({name:"AES-GCM", iv}, syncKey, enc);
+    const r=await fetch("/api/sync",{ method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ id:syncId, salt:saltB64, iv:b64(iv), ciphertext:b64(cipherBuf) }) });
+    const j=await r.json().catch(()=>({}));
+    const line=document.getElementById("syncStatusLine");
+    if(r.ok){ if(line) line.textContent="🔒 Synced just now — this data follows your passcode across devices."; }
+    else if(j.error==="sync_not_configured"){ if(line) line.textContent="⚠️ Sync storage isn't turned on for this site yet — your passcode is saved for this device, but nothing's syncing until that's set up."; }
+  }catch(e){ /* offline or network hiccup — local data is untouched, next change will retry */ }
+  syncBusy=false;
+}
+function schedulePush(){ if(!syncKey) return; clearTimeout(pushTimer); pushTimer=setTimeout(pushSyncNow, 2500); }
+
+async function syncCreate(passcode){
+  if(!passcode || passcode.length<4){ toast("Pick a passcode at least 4 characters — something only you'd know."); return; }
+  const id=await sha256Hex(passcode+SYNC_PEPPER+"id");
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  await armSession(passcode, salt, id);
+  updateSyncUI(true);
+  await pushSyncNow();
+  addPoints(5,"Set up — your data can follow you now");
+}
+async function syncRestore(passcode){
+  if(!passcode){ toast("Type the passcode first."); return; }
+  const id=await sha256Hex(passcode+SYNC_PEPPER+"id");
+  let resp;
+  try{ resp=await fetch("/api/sync?id="+id); } catch(e){ toast("Couldn't reach the server — check your connection and try again."); return; }
+  const j=await resp.json().catch(()=>({}));
+  if(j.error==="sync_not_configured"){ toast("Sync storage isn't turned on for this site yet."); return; }
+  if(!j.found){ toast("No data found for that passcode — double check it, or use 'set up sync' if this is your first time."); return; }
+  const saltBytes=unb64(j.data.salt);
+  const key=await deriveKey(passcode, saltBytes);
+  try{
+    const plainBuf=await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(j.data.iv)}, key, unb64(j.data.ciphertext));
+    const restored=JSON.parse(new TextDecoder().decode(plainBuf));
+    S=Object.assign({}, S, restored);
+    await armSession(passcode, saltBytes, id);
+    save(); render(); updateSyncUI(true);
+    toast("Restored — welcome back 💗");
+  }catch(e){
+    toast("That passcode doesn't match this data — nothing was changed.");
+  }
+}
+function syncStop(){
+  syncKey=null; syncId=null;
+  sessionStorage.removeItem("sd_sync_active"); sessionStorage.removeItem("sd_sync_id");
+  sessionStorage.removeItem("sd_sync_salt"); sessionStorage.removeItem("sd_sync_rawkey");
+  updateSyncUI(false);
+  toast("Sync stopped on this device — your data stays wherever it already was.");
+}
+(async function resumeSyncSession(){
+  if(sessionStorage.getItem("sd_sync_active")==="1"){
+    try{
+      const raw=unb64(sessionStorage.getItem("sd_sync_rawkey"));
+      syncKey=await crypto.subtle.importKey("raw", raw, {name:"AES-GCM"}, true, ["encrypt","decrypt"]);
+      syncId=sessionStorage.getItem("sd_sync_id");
+      updateSyncUI(true);
+    }catch(e){ /* ignore — she can just re-enter the passcode */ }
+  }
+})();
+
+document.getElementById("syncCreate").onclick=()=>{ syncCreate(document.getElementById("syncPass").value); };
+document.getElementById("syncRestoreBtn").onclick=()=>{ syncRestore(document.getElementById("syncPass").value); };
+document.getElementById("syncOff").onclick=syncStop;
+document.getElementById("syncPass").addEventListener("keydown",e=>{ if(e.key==="Enter") syncCreate(e.target.value); });
+
+/* ================= AUDIO ENGINE ================= */
+const Sound=(()=>{
+  let ctx=null, master=null, unlocked=false;
+  const active=[]; // stoppable nodes for looping beds
+  function ensure(){
+    if(ctx) return ctx;
+    try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+    master=ctx.createGain(); master.gain.value=S.soundOn?0.9:0; master.connect(ctx.destination);
+    return ctx;
+  }
+  function unlock(){
+    const c=ensure(); if(!c) return;
+    if(c.state==="suspended") c.resume();
+    if(!unlocked){
+      const b=c.createBuffer(1,1,22050); const s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(0);
+      unlocked=true;
+    }
+  }
+  function setOn(on){ S.soundOn=on; if(master) master.gain.setTargetAtTime(on?0.9:0, ctx.currentTime, 0.05); }
+  function now(){ return ctx?ctx.currentTime:0; }
+  function env(gain, t0, atk, hold, rel){
+    gain.gain.cancelScheduledValues(t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(1, t0+atk);
+    gain.gain.setValueAtTime(1, t0+atk+hold);
+    gain.gain.linearRampToValueAtTime(0.0001, t0+atk+hold+rel);
+  }
+  // one-shot soft bell / blip, freq in Hz, dur in seconds, gain 0-1
+  function blip(freq, dur=0.5, peak=0.06, type="sine", delay=0){
+    const c=ensure(); if(!c||!S.soundOn) return;
+    const t0=now()+delay;
+    const o=c.createOscillator(); o.type=type; o.frequency.setValueAtTime(freq,t0);
+    const g=c.createGain(); g.gain.setValueAtTime(0.0001,t0);
+    g.gain.linearRampToValueAtTime(peak,t0+Math.min(0.05,dur*0.2));
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+    o.connect(g); g.connect(master);
+    o.start(t0); o.stop(t0+dur+0.05);
+  }
+  function chime(freqs, dur=0.7, peak=0.05){
+    freqs.forEach((f,i)=>blip(f, dur, peak, "sine", i*0.09));
+  }
+  // pentatonic pop for bubbles / taps — always sounds musical
+  const PENTA=[261.6,293.7,329.6,392.0,440.0,523.3,587.3,659.3];
+  function pop(i){ const f=PENTA[(i|0)%PENTA.length]; blip(f, 0.35, 0.05, "sine"); }
+  // noise buffer factory
+  function noiseBuffer(seconds=2){
+    const c=ensure(); if(!c) return null;
+    const buf=c.createBuffer(1, c.sampleRate*seconds, c.sampleRate);
+    const d=buf.getChannelData(0);
+    let b0=0,b1=0,b2=0;
+    for(let i=0;i<d.length;i++){
+      const w=Math.random()*2-1;
+      b0=0.99*b0+w*0.05; b1=0.98*b1+w*0.08; b2=0.95*b2+w*0.12;
+      d[i]=(b0+b1+b2)*0.6;
+    }
+    return buf;
+  }
+  // looping bed: returns {stop(fadeSec)}
+  function bed(kind){
+    const c=ensure(); if(!c||!S.soundOn) return {stop(){}};
+    const t0=now();
+    const g=c.createGain(); g.gain.setValueAtTime(0.0001,t0); g.connect(master);
+    let nodes=[];
+    if(kind==="pad"){
+      [110,165].forEach(f=>{
+        const o=c.createOscillator(); o.type="sine"; o.frequency.value=f;
+        const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=500;
+        o.connect(lp); lp.connect(g); o.start(); nodes.push(o);
+      });
+      g.gain.linearRampToValueAtTime(0.045,t0+2);
+      const lfo=c.createOscillator(); lfo.frequency.value=0.07;
+      const lfoGain=c.createGain(); lfoGain.gain.value=0.015;
+      lfo.connect(lfoGain); lfoGain.connect(g.gain); lfo.start(); nodes.push(lfo);
+    } else if(kind==="ocean" || kind==="stream"){
+      const buf=noiseBuffer(4); const src=c.createBufferSource(); src.buffer=buf; src.loop=true;
+      const bp=c.createBiquadFilter(); bp.type="lowpass"; bp.frequency.value=700; bp.Q.value=0.7;
+      src.connect(bp); bp.connect(g); src.start(); nodes.push(src);
+      const lfo=c.createOscillator(); lfo.frequency.value= kind==="ocean"?0.09:0.07;
+      const lfoGain=c.createGain(); lfoGain.gain.value=350;
+      lfo.connect(lfoGain); lfoGain.connect(bp.frequency); lfo.start(); nodes.push(lfo);
+      g.gain.linearRampToValueAtTime(0.05,t0+2);
+    } else if(kind==="deep"){
+      [73,110].forEach(f=>{
+        const o=c.createOscillator(); o.type="sine"; o.frequency.value=f;
+        const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=300;
+        o.connect(lp); lp.connect(g); o.start(); nodes.push(o);
+      });
+      g.gain.linearRampToValueAtTime(0.05,t0+3);
+    }
+    return { stop(fade=2){
+      g.gain.setTargetAtTime(0.0001, now(), fade/3);
+      setTimeout(()=>{ nodes.forEach(n=>{try{n.stop&&n.stop()}catch(e){}}); }, fade*1000+300);
+    }};
+  }
+  // breath tone that sweeps a filtered-noise ocean in/out over given seconds
+  function breathTone(inSec, holdSec, outSec){
+    const c=ensure(); if(!c||!S.soundOn) return {stop(){}};
+    const buf=noiseBuffer(Math.max(2,inSec+outSec));
+    const src=c.createBufferSource(); src.buffer=buf; src.loop=true;
+    const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.Q.value=0.8;
+    const g=c.createGain(); g.gain.value=0.0001;
+    src.connect(lp); lp.connect(g); g.connect(master);
+    const t0=now();
+    lp.frequency.setValueAtTime(280,t0);
+    lp.frequency.linearRampToValueAtTime(1100,t0+inSec);
+    g.gain.setValueAtTime(0.02,t0); g.gain.linearRampToValueAtTime(0.065,t0+inSec);
+    lp.frequency.setValueAtTime(1100,t0+inSec+holdSec);
+    lp.frequency.linearRampToValueAtTime(220,t0+inSec+holdSec+outSec);
+    g.gain.setValueAtTime(0.065,t0+inSec+holdSec); g.gain.linearRampToValueAtTime(0.02,t0+inSec+holdSec+outSec);
+    src.start(t0);
+    return { stop(){ try{ g.gain.setTargetAtTime(0.0001,now(),0.3); src.stop(now()+0.5);}catch(e){} } };
+  }
+  return { unlock, setOn, blip, chime, pop, bed, breathTone, get on(){return S.soundOn} };
+})();
+
+/* ================= HAPTICS ================= */
+const Haptics=(()=>{
+  const supported = typeof navigator!=="undefined" && typeof navigator.vibrate==="function";
+  let loopId=null, loopTimer=null;
+  function glow(ms=280){
+    const el=document.getElementById("glow"); el.style.opacity="1";
+    clearTimeout(el._t); el._t=setTimeout(()=>el.style.opacity="0", ms);
+  }
+  function play(pattern){
+    if(!S.hapticOn) { glow(); return; }
+    if(supported){ try{ navigator.vibrate(pattern); }catch(e){} }
+    glow(Array.isArray(pattern)? pattern.reduce((a,b)=>a+b,0) : pattern);
+  }
+  function stopLoop(){ if(loopTimer){ clearInterval(loopTimer); loopTimer=null; } if(supported) try{navigator.vibrate(0)}catch(e){} }
+  function loop(pattern, totalMs=15000){
+    stopLoop();
+    const period = Array.isArray(pattern)? pattern.reduce((a,b)=>a+b,0) : pattern;
+    play(pattern);
+    let elapsed=0;
+    loopTimer=setInterval(()=>{
+      elapsed+=period;
+      if(elapsed>=totalMs || document.hidden){ stopLoop(); return; }
+      play(pattern);
+    }, period);
+  }
+  document.addEventListener("visibilitychange", ()=>{ if(document.hidden) stopLoop(); });
+  return { supported, play, loop, stopLoop, tap:()=>play(14), confirm:()=>play([25,60,25]), success:()=>play([20,50,20,50,40]) };
+})();
+
+/* first-gesture unlock */
+["pointerdown","touchstart","click","keydown"].forEach(ev=>
+  document.addEventListener(ev, ()=>Sound.unlock(), {once:false, passive:true}));
+
+/* toggles */
+const soundBtn=document.getElementById("soundToggle"), hapticBtn=document.getElementById("hapticToggle");
+function syncToggles(){
+  soundBtn.textContent = S.soundOn? "🔊 Sound on":"🔈 Sound off";
+  soundBtn.classList.toggle("on", S.soundOn);
+  hapticBtn.textContent = (Haptics.supported? "📳 " : "✨ ") + (S.hapticOn? "Vibration on":"Vibration off");
+  hapticBtn.classList.toggle("on", S.hapticOn);
+}
+soundBtn.onclick=()=>{ S.soundOn=!S.soundOn; Sound.setOn(S.soundOn); save(); syncToggles(); toast(S.soundOn?"Sound on":"Sound off — everything still works in silence"); };
+hapticBtn.onclick=()=>{ S.hapticOn=!S.hapticOn; save(); syncToggles(); toast(S.hapticOn?"Vibration on":"Vibration off"); if(S.hapticOn) Haptics.tap(); };
+syncToggles();
+
+/* theme */
+const themeSel=document.getElementById("themeSel");
+function applyTheme(){
+  let t=S.theme;
+  if(t==="auto"){
+    const h=new Date().getHours();
+    t = (h>=22||h<6) ? "night" : (h>=18? "dusk" : "dawn");
+  }
+  document.documentElement.setAttribute("data-theme", t==="dawn"?"":t);
+}
+themeSel.value=S.theme; themeSel.onchange=()=>{ S.theme=themeSel.value; save(); applyTheme(); };
+applyTheme();
+
+/* ================= GARDEN / POINTS (no punishment, ever) ================= */
+const FLOWERS=["🌸","🌷","🌼","🪻","🌺","🌻","🍀","🦋","🌱","🕊️","💮","🪷","✨","🐚"];
+function addPoints(n,msg){
+  S.points+=n;
+  while(S.garden.length < Math.floor(S.points/12)) S.garden.push(FLOWERS[Math.floor(Math.random()*FLOWERS.length)]);
+  save(); render();
+  if(msg){ toast(msg); Haptics.play([18,40,18]); Sound.chime([523.3,659.3],0.9,0.045); }
+}
+function levelName(p){ if(p<40)return"Seedling"; if(p<110)return"Bud"; if(p<220)return"Bloom"; if(p<380)return"Garden"; return"Wildflower"; }
+(function visit(){
+  const t=today();
+  if(S._lastVisit!==t){ S._lastVisit=t; S.visits++; S.points+=5; save(); }
+})();
+
+function render(){
+  document.getElementById("garden").innerHTML = S.garden.length? S.garden.map(f=>`<span>${f}</span>`).join("")
+    : `<span style="font-size:14px;color:var(--ink-soft)">Empty for now — it fills whenever you're ready, no rush.</span>`;
+  document.getElementById("sPoints").textContent=S.points;
+  document.getElementById("sVisits").textContent=S.visits;
+  document.getElementById("sLevel").textContent=levelName(S.points);
+  document.getElementById("bar").style.width=((S.points%12)/12*100)+"%";
+  document.getElementById("greet").textContent=greeting();
+  drawTodo(); drawMoodHist(); drawJournal(); drawCycle(); drawCalendar(); drawMonthStats(); drawForest(); drawJar();
+}
+function greeting(){
+  const h=new Date().getHours();
+  return h<5?"It's late. Be extra soft with yourself tonight.":
+    h<12?"Good morning. Take it slow today.":
+    h<17?"Good afternoon. Have you had water yet?":
+    h<22?"Good evening. You made it through today.":
+    "It's late. Rest is allowed, no conditions attached.";
+}
+
+/* ================= MOODS + COMPANION — an actual interactive character, not a picture ================= */
+const MOODS=[
+  ["😣","Hurting","hurting"],
+  ["😭","Weepy","weepy"],
+  ["😤","Irritable","irritable"],
+  ["😴","Exhausted","exhausted"],
+  ["🥺","Low","low"],
+  ["🙂","Okay","okay"],
+  ["😌","Calm","calm"]
+];
+const mEl=document.getElementById("moods");
+const mrEl=document.getElementById("moodResponse");
+mEl.innerHTML=MOODS.map((m,i)=>`<button class="mood" data-i="${i}">${m[0]}</button>`).join("");
+
+const GREET=[
+  "Hey. I heard that. I'm right here — want to talk, or want me to just help with your body first?",
+  "Okay, I've got you. Tell me anything, or tap something below and I'll do it with you.",
+  "Noted, and I'm not going anywhere. What do you need most right now?",
+  "I'm here. Doesn't have to make sense yet — just talk to me if you want.",
+];
+const PET_REPLIES=["mm, that's nice.","stay there a second.","that actually helps, thank you.","okay, I needed that."];
+let companionAlive=false, blinkIv=null, ambientBed=null, breathTimeouts=[], chatHistory=[];
+
+function speak(text, ms){
+  const bubble=document.getElementById("cBubble"); if(!bubble) return;
+  const comp=document.getElementById("companionChar");
+  bubble.textContent=text;
+  const dur = ms || Math.min(4500, Math.max(1200, text.length*45));
+  if(comp){ comp.classList.add("talking"); setTimeout(()=>comp.classList.remove("talking"), dur); }
+  srSay(text);
+}
+function stopAmbient(){ if(ambientBed){ ambientBed.stop(1.2); ambientBed=null; } breathTimeouts.forEach(clearTimeout); breathTimeouts=[]; }
+function clearMoodResponse(){
+  companionAlive=false;
+  if(blinkIv){ clearInterval(blinkIv); blinkIv=null; }
+  stopAmbient();
+}
+
+async function getCompanionReply(moodKey, textRaw, history){
+  try{
+    const ctrl=new AbortController();
+    const timeout=setTimeout(()=>ctrl.abort(), 12000);
+    const r=await fetch("/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ message:textRaw, mood:moodKey, history:(history||[]).slice(-8) }),
+      signal: ctrl.signal
+    });
+    clearTimeout(timeout);
+    if(!r.ok) throw new Error("chat api error "+r.status);
+    const j=await r.json();
+    if(j.reply) return j.reply;
+    throw new Error("no reply");
+  }catch(e){
+    return localCompanionReply(moodKey, textRaw);
+  }
+}
+function localCompanionReply(moodKey, textRaw){
+  const t=textRaw.toLowerCase();
+  const has=(...words)=>words.some(w=>t.includes(w));
+  if(has("cramp","pain","hurt","ache")) return "That sounds like it's really loud right now. Tap 'warmth' or 'pressure point' below and I'll walk you through it with you — you don't have to do it alone.";
+  if(has("tired","exhaust","sleep","sleepy")) return "Your body's doing a lot of invisible work. Resting isn't giving up, it's the actual job right now. Want me to time two minutes for you?";
+  if(has("sad","cry","upset","crying")) return "Let it come. Crying during your period is your hormones, not you being 'too much'. I'll just stay here while it passes.";
+  if(has("angry","mad","annoyed","irritat","hate everyone","snap")) return "Makes sense — everything's turned up loud today. Want three slow breaths together before you reply to anyone?";
+  if(has("alone","lonely","nobody","no one")) return "You're not bothering anyone by needing support. If you want, I can help you write a short message to send someone — you don't have to explain everything, just enough.";
+  if(has("scared","worried","anxious","afraid")) return "I hear you. If it's about your body specifically, the Doctor tab has a quick check-in that turns worry into an actual next step instead of just sitting with it.";
+  if(has("thank")) return "Always. That's what I'm here for.";
+  if(has("hate myself","useless","failure","worthless")) return "Hey — that's the pain talking, not the truth. You are not useless for having a body that's working hard right now. I'm not letting that one slide, sorry.";
+  if(has("hi","hello","hey")) return "Hi. I'm glad you tapped in today.";
+  const pools={
+    hurting:["I know it hurts. I'm right here through it.","You don't have to perform being fine for me.","This is a real physical thing happening, not you overreacting."],
+    weepy:["Let it out, properly, if it wants to come.","I'm not going anywhere while you cry.","You don't need a reason good enough to justify this."],
+    irritable:["Everyone's a bit much today. Even you, a bit, to yourself — go easy.","I won't take it personally if you're short with me."],
+    exhausted:["Close your eyes for a second, even just here.","You don't owe today your full energy."],
+    low:["This heaviness has an end date. It always has.","You're allowed to just get through today, nothing more."],
+    okay:["Good. I'll take it.","Let's keep this going a little."],
+    calm:["Nice. I'll just sit here with you."]
+  };
+  const pool=pools[moodKey]||pools.low;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function actionsFor(moodKey){
+  const A=[];
+  if(moodKey==="hurting"){
+    A.push(["🔥 Start warmth for me", ()=>{ document.querySelector('[data-p="relief"]').click();
+      const b=document.getElementById("tStart"); if(b.textContent.includes("Start")) b.click(); speak("Warmth's going. Fifteen minutes, I'll be here after."); }]);
+    A.push(["👆 Guide a pressure point", ()=>{ document.querySelector('[data-p="relief"]').click();
+      const ob=document.querySelector('[data-open="sp6"]'); if(ob) ob.click();
+      document.getElementById("ex_sp6")?.scrollIntoView({behavior:"smooth",block:"center"});
+      speak("Opened it in Relief — press play there and follow along."); }]);
+    A.push(["🫧 Breathe with me", ()=>runAmbientBreath(4,6)]);
+  } else if(moodKey==="weepy"){
+    A.push(["💗 Just sit with me", ()=>runPresence("pad", GREET[Math.floor(Math.random()*GREET.length)])]);
+    A.push(["🕯️ Say something kind", ()=>speak(AFF[Math.floor(Math.random()*AFF.length)])]);
+  } else if(moodKey==="irritable"){
+    A.push(["🫧 Help me breathe it out", ()=>runThreeBreaths()]);
+    A.push(["🎈 Give me something to pop", ()=>{ document.querySelector('[data-p="play"]').click();
+      const bb=document.getElementById("bubBtn"); if(bb.textContent==="Start") bb.click(); }]);
+  } else if(moodKey==="exhausted"){
+    A.push(["⏱️ Time me two minutes to rest", ()=>runRestTimer()]);
+  } else if(moodKey==="low"){
+    A.push(["🫶 Hold my hand", ()=>runPresence("pad","I'm here. One hand on your heart, if that feels okay.")]);
+    A.push(["📝 Help me tell someone", ()=>{ speak("Even something short works. Try: 'Having a really rough day with my period, could use a check-in.' Send that to whoever feels safest."); }]);
+  } else {
+    A.push(["✨ Celebrate a bit", ()=>{ burstSparkle(document.getElementById("mrSparkle")); speak("Good. Let's bottle this."); Sound.chime([523.3,659.3,784],1,0.045); Haptics.play([20,40,20,40,20]); }]);
+  }
+  return A;
+}
+function burstSparkle(wrap){ if(!wrap) return; wrap.innerHTML="";
+  ["✨","🌟","💐"].forEach((s,idx)=>{ const el=document.createElement("span"); el.className="sparkle"; el.textContent=s;
+    el.style.left=(26+idx*22)+"%"; el.style.animationDelay=(idx*0.12)+"s"; wrap.appendChild(el); }); }
+function runAmbientBreath(inSec,outSec){
+  stopAmbient(); const comp=document.getElementById("companionChar");
+  speak("Follow me — I'll get bigger on the in-breath, smaller on the out.");
+  const cycle=()=>{
+    if(!companionAlive) return;
+    comp.style.transitionDuration=inSec+"s"; comp.style.transform="scale(1.18)";
+    Sound.breathTone(inSec,0,outSec); Haptics.play(inSec*1000);
+    breathTimeouts.push(setTimeout(()=>{ if(!companionAlive)return; comp.style.transitionDuration=outSec+"s"; comp.style.transform="scale(1)";
+      breathTimeouts.push(setTimeout(()=>{ if(companionAlive) cycle(); },outSec*1000)); },inSec*1000));
+  }; cycle();
+}
+function runThreeBreaths(){
+  stopAmbient(); const comp=document.getElementById("companionChar");
+  let r=0;
+  const round=()=>{
+    if(!companionAlive) return;
+    if(r>=3){ speak("Good. Notice your jaw, your shoulders — anything let go?"); burstSparkle(document.getElementById("mrSparkle")); addPoints(6,""); return; }
+    if(r===0) speak("Three rounds, out longer than in. I'll count with you.");
+    comp.style.transitionDuration="4s"; comp.style.transform="scale(1.15)";
+    Sound.breathTone(4,0,7); Haptics.play(4000);
+    breathTimeouts.push(setTimeout(()=>{ if(!companionAlive)return; comp.style.transitionDuration="7s"; comp.style.transform="scale(1)";
+      breathTimeouts.push(setTimeout(()=>{ r++; if(companionAlive) round(); },7000)); },4000));
+  }; round();
+}
+function runPresence(bedKind, firstLine){
+  stopAmbient(); ambientBed=Sound.bed(bedKind); speak(firstLine);
+  let i=0; const lines=["I'm not going anywhere.","Still here.","No rush at all.","Take whatever time this needs."];
+  const iv=setInterval(()=>{ if(!companionAlive){clearInterval(iv);return;} speak(lines[i%lines.length]); i++; },5200);
+  breathTimeouts.push(iv);
+}
+function runRestTimer(){
+  stopAmbient(); ambientBed=Sound.bed("ocean");
+  speak("Two minutes. Eyes closed if you can — I'll hold the time.");
+  let left=120;
+  const timerBox=document.getElementById("mrTimer"); if(timerBox) timerBox.style.display="block";
+  const iv=setInterval(()=>{
+    left--; if(timerBox) timerBox.textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");
+    if(left<=0 || !companionAlive){ clearInterval(iv); if(companionAlive){ speak("Done. However rested you feel is the right amount."); Sound.chime([523.3,659.3],1,0.04); addPoints(8,""); } }
+  },1000);
+}
+
+function renderCompanion(idx){
+  const key=MOODS[idx][2];
+  mrEl.innerHTML = `
+    <div class="companionWrap">
+      <div class="companion mood-${key}" id="companionChar">
+        <div class="cEye l"></div><div class="cEye r"></div><div class="cMouth"></div>
+      </div>
+      <div class="cName">tap to pet · type to talk</div>
+      <div class="cBubble" id="cBubble">…</div>
+      <div class="timer" id="mrTimer" style="display:none;margin-top:6px"></div>
+      <div class="sparkleWrap" id="mrSparkle"></div>
+      <div class="cActions" id="cActions"></div>
+      <div class="cChatLog" id="cChatLog"></div>
+      <div class="cInputRow">
+        <input type="text" id="cInput" placeholder="Say what's going on, if you want…" maxlength="200">
+        <button class="primary" id="cSend">Send</button>
+      </div>
+    </div>`;
+  const acts=actionsFor(key);
+  document.getElementById("cActions").innerHTML=acts.map((a,i)=>`<button data-act="${i}">${a[0]}</button>`).join("");
+  document.getElementById("cActions").addEventListener("click",e=>{
+    const b=e.target.closest("[data-act]"); if(!b)return; acts[+b.dataset.act][1]();
+  });
+  const comp=document.getElementById("companionChar");
+  let petTimer=null;
+  comp.addEventListener("pointerdown",()=>{
+    comp.classList.add("petting"); Haptics.play([20,30,20]); Sound.blip(440+Math.random()*80,0.4,0.03,"sine");
+    clearTimeout(petTimer); petTimer=setTimeout(()=>{ comp.classList.remove("petting");
+      speak(PET_REPLIES[Math.floor(Math.random()*PET_REPLIES.length)]); }, 260);
+  });
+  blinkIv=setInterval(()=>{ comp.classList.add("blink"); setTimeout(()=>comp.classList.remove("blink"),160); },3200+Math.random()*1800);
+  speak(GREET[Math.floor(Math.random()*GREET.length)]);
+  const renderChat=()=>{
+    const log=document.getElementById("cChatLog");
+    log.innerHTML=chatHistory.map(m=>`<div class="cMsg ${m.who==='her'?'her':'it'}">${m.t.replace(/</g,"&lt;")}</div>`).join("");
+    log.scrollTop=log.scrollHeight;
+  };
+  const send=async ()=>{
+    const input=document.getElementById("cInput"); const val=input.value.trim(); if(!val) return;
+    const myMood=key;
+    chatHistory.push({who:"her",t:val}); input.value=""; renderChat();
+    document.getElementById("cBubble").textContent="…";
+    const reply=await getCompanionReply(myMood, val, chatHistory);
+    if(myMood!==key) return; // she switched moods while waiting — don't inject a stale reply
+    chatHistory.push({who:"it",t:reply}); renderChat();
+    speak(reply, Math.min(6000,Math.max(1500,reply.length*40)));
+    Haptics.tap();
+  };
+  document.getElementById("cSend").onclick=send;
+  document.getElementById("cInput").addEventListener("keydown",e=>{ if(e.key==="Enter") send(); });
+  companionAlive=true;
+}
+
+function activateMood(i, isNew){
+  document.querySelectorAll(".mood").forEach(x=>x.classList.toggle("on", +x.dataset.i===i));
+  clearMoodResponse();
+  chatHistory=[];
+  mrEl.classList.add("on");
+  renderCompanion(i);
+  S.moods[today()]=i; save(); Haptics.tap();
+  if(isNew) addPoints(5,"Checked in with yourself 💗");
+  drawMoodHist();
+}
+mEl.addEventListener("click",e=>{
+  const b=e.target.closest(".mood"); if(!b)return;
+  const i=+b.dataset.i;
+  const first=!S.moods[today()];
+  activateMood(i, first);
+});
+if(S.moods[today()]!=null){ activateMood(S.moods[today()], false); }
+function drawMoodHist(){
+  const out=[];
+  for(let d=13;d>=0;d--){
+    const k=new Date(Date.now()-d*864e5).toISOString().slice(0,10);
+    out.push(`<span title="${k}">${S.moods[k]!=null?MOODS[S.moods[k]][0]:"·"}</span>`);
+  }
+  document.getElementById("moodHist").innerHTML=out.join("");
+}
+
+/* ================= TODO (optional, no guilt) ================= */
+const TODO=[
+  ["💧","A glass of water","Dehydration makes cramps sharper."],
+  ["🔥","10 minutes of heat","As effective as painkillers in several trials."],
+  ["🚶","A slow 5-minute walk","Even gentle movement releases endorphins."],
+  ["🍫","Something with iron or magnesium","Dark chocolate, spinach, nuts, dates."],
+  ["📵","Ten quiet minutes, no screen","Your nervous system needs the gap."]
+];
+function drawTodo(){
+  const idx=new Date().getDate()%TODO.length; const t=TODO[idx];
+  const doneKey="t"+today();
+  document.getElementById("todo").innerHTML=`
+    <div class="tip"><em>${t[0]}</em><div style="flex:1"><b>${t[1]}</b><small>${t[2]}</small></div></div>
+    <div class="row">
+      <button class="primary" data-todo="did" ${S.done[doneKey]?"disabled":""}>${S.done[doneKey]==="did"?"done, and that's lovely ✓":"I did it"}</button>
+      <button data-todo="skip" ${S.done[doneKey]?"disabled":""}>${S.done[doneKey]==="skip"?"skipped, and that's fine too":"not today"}</button>
+    </div>`;
+}
+document.getElementById("todo").addEventListener("click",e=>{
+  const b=e.target.closest("[data-todo]"); if(!b)return;
+  S.done["t"+today()]=b.dataset.todo; save(); drawTodo();
+  if(b.dataset.todo==="did") addPoints(8,"Nice — that counts");
+  else toast("Totally fine. Tomorrow's another chance, or not.");
+});
+
+/* ================= WARMTH TIMER ================= */
+let tLeft=900,tId=null;
+const tDisp=document.getElementById("tDisp");
+const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+document.getElementById("tStart").onclick=function(){
+  if(tId){ clearInterval(tId); tId=null; this.textContent="Start warmth timer"; Haptics.stopLoop(); return; }
+  this.textContent="Pause"; Haptics.play(40);
+  tId=setInterval(()=>{
+    tLeft--; tDisp.textContent=fmt(tLeft);
+    if(tLeft%60===0){ Sound.blip(392,0.6,0.04); Haptics.play([15,80,25,80,40]); }
+    if(tLeft<=0){
+      clearInterval(tId); tId=null; document.getElementById("tStart").textContent="Start warmth timer";
+      tLeft=900; tDisp.textContent="15:00";
+      Haptics.play([120,90,120]); addPoints(15,"15 minutes of warmth done. How's the ache now?");
+    }
+  },1000);
+};
+document.getElementById("tReset").onclick=()=>{ clearInterval(tId); tId=null; tLeft=900; tDisp.textContent="15:00"; document.getElementById("tStart").textContent="Start warmth timer"; };
+
+/* ================= GUIDED EXERCISE PLAYER ================= */
+/* A generic step-through-script runner used by relief + mind exercises + panic button */
+function runScript(container, lines, timings, opts){
+  opts=opts||{};
+  const bedKind=opts.bed||null, autoAdvance=timings&&timings.length===lines.length;
+  container.innerHTML=`
+    <div class="exLine" aria-live="assertive"></div>
+    <div class="exBar"><i></i></div>
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <button class="primary" data-act="playpause">Start</button>
+      <button data-act="next">Skip line</button>
+      <button data-act="stop">Stop</button>
+    </div>`;
+  const lineEl=container.querySelector(".exLine"), barI=container.querySelector(".exBar i");
+  let i=-1, playing=false, stepTimer=null, activeBed=null;
+  function stopBed(){ if(activeBed){ activeBed.stop(1.5); activeBed=null; } }
+  function finish(){
+    playing=false; stopBed(); Haptics.stopLoop();
+    lineEl.textContent="That's it. However that landed for you is the right result.";
+    barI.style.transition="width .4s"; barI.style.width="100%";
+    container.querySelector("[data-act=playpause]").textContent="Do it again";
+    addPoints(10, opts.rewardMsg||"Session complete 💗");
+  }
+  function showLine(n){
+    i=n; if(i>=lines.length){ finish(); return; }
+    lineEl.textContent=lines[i]; srSay(lines[i]);
+    Haptics.tap();
+    const dur = (timings&&timings[i]) ? Math.min(timings[i],45) : 5;
+    barI.style.transition="none"; barI.style.width="0%";
+    requestAnimationFrame(()=>{ barI.style.transition=`width ${dur}s linear`; barI.style.width="100%"; });
+    if(stepTimer) clearTimeout(stepTimer);
+    if(autoAdvance && playing) stepTimer=setTimeout(()=>showLine(i+1), dur*1000);
+  }
+  container.addEventListener("click",e=>{
+    const b=e.target.closest("[data-act]"); if(!b) return;
+    const act=b.dataset.act;
+    if(act==="playpause"){
+      if(!playing){
+        playing=true; b.textContent="Pause";
+        if(bedKind) activeBed=Sound.bed(bedKind);
+        if(i<0 || i>=lines.length) showLine(0); else showLine(i);
+      } else {
+        playing=false; b.textContent="Continue"; if(stepTimer) clearTimeout(stepTimer); stopBed();
+      }
+    } else if(act==="next"){
+      if(stepTimer) clearTimeout(stepTimer);
+      showLine(i+1);
+    } else if(act==="stop"){
+      playing=false; if(stepTimer) clearTimeout(stepTimer); stopBed(); Haptics.stopLoop();
+      i=-1; lineEl.textContent=""; barI.style.width="0%";
+      container.querySelector("[data-act=playpause]").textContent="Start";
+    }
+  });
+}
+
+/* ================= RELIEF LIBRARY ================= */
+const RELIEF = [
+  { id:"sp6", title:"Acupressure — SP6 (best evidence)", bed:null,
+    lines:[
+      "SP6, Sanyinjiao. If you only ever learn one point, learn this — it has the strongest trial evidence for period pain.",
+      "Sit down and bare one ankle.",
+      "Find the bony bump on the inside of your ankle.",
+      "Stack four fingers on your shin, little finger on top of that bump.",
+      "Just above your index finger, slide off the shin bone into the soft dip behind it. That's the point.",
+      "Press with your thumb, angled slightly back. Firm — a deep dull ache, not sharp.",
+      "Match it to your breath: press as you breathe out for six seconds, ease off as you breathe in for two.",
+      "Keep that rhythm for five minutes on this leg.",
+      "Now swap to the other leg for five minutes."
+    ],
+    timings:[8,3,4,7,8,7,9,300,300],
+    haptic:"press-release", safety:"Avoid in pregnancy. Skip over broken skin, varicose veins or bruising. Stop for sharp or shooting pain." },
+  { id:"sacral", title:"Sacral counter-pressure (best for back pain)", bed:"deep",
+    lines:[
+      "The sacral points — the same counter-pressure midwives use for back pain in labour.",
+      "Hands on hips, thumbs pointing backwards.",
+      "Slide inward to two small dimples just above your buttocks, either side of the spine.",
+      "Rub your hands warm, then press with your thumbs or knuckles.",
+      "Firm and sustained — lean your body weight back into your own hands.",
+      "Hold each spot 30 to 60 seconds, or make slow deep circles.",
+      "Three to five minutes total. Add heat here afterwards and it roughly doubles the relief."
+    ],
+    timings:[9,4,9,8,8,8,180],
+    haptic:"lean-release", safety:"Press on bone, not the spine itself. Stop for pain, numbness or weakness down a leg." },
+  { id:"catcow", title:"Cat-cow — 2 minutes", bed:"pad",
+    lines:[
+      "Cat-cow. The pose in almost every trial of yoga for period pain.",
+      "Hands under shoulders, knees under hips.",
+      "Breathe in: belly drops, chest opens. That's cow.",
+      "Breathe out: round your back, tuck your tailbone. That's cat.",
+      "Slow — one full breath per movement, about five seconds each way.",
+      "Keep going for ten rounds. You're pumping fresh blood through your whole pelvis.",
+      "Finish in the middle, spine neutral, and just breathe once."
+    ],
+    timings:[6,6,7,7,5,60,6],
+    haptic:"rock", safety:"Keep movement small with any neck issue. Stop for sharp low-back pain." },
+  { id:"kneeschest", title:"Knees to chest — 2 minutes", bed:"pad",
+    lines:[
+      "Knees to chest. The simplest pose, and often the most effective.",
+      "Lie on your back, draw both knees to your chest.",
+      "Hold behind your thighs if your knees complain.",
+      "A real hug. Let your low back flatten into the floor.",
+      "Breathe out and draw knees a fraction closer; breathe in and let them float away.",
+      "Ten of those. Your low back decompresses and a slowed gut gets a gentle massage — a real, under-rated part of period pain.",
+      "Then let both feet down slowly, one at a time."
+    ],
+    timings:[5,5,6,5,8,60,6],
+    haptic:"rock", safety:"Nothing forced — stay within comfort." },
+  { id:"tipp", title:"Pain spike — do this now", bed:null,
+    lines:[
+      "Spike. Okay. Fast things first.",
+      "Cold water on your face — eyes, cheekbones, temples. No sink? A cold pack or frozen peas against your cheeks.",
+      "Hold it there for a count of twenty. This isn't a distraction — cold on that part of your face genuinely slows your heart rate.",
+      "Come up, breathe normally for a second.",
+      "Paced breathing now: in through your nose for 4.",
+      "Out through your mouth, slow, for 8. Let your shoulders drop.",
+      "Again — in for 4.",
+      "Out for 8.",
+      "Now muscles. Never your stomach. Make two tight fists on an in-breath.",
+      "Hold five seconds.",
+      "Drop them on the out-breath. Say 'soft' in your head as they fall.",
+      "Shoulders up to your ears — hold — and drop, further than you think.",
+      "Even one point down on how it feels means this worked. If it's still high, that's not failure — cold again, heat on your belly, and ride the long exhales."
+    ],
+    timings:[4,22,10,5,4,8,4,8,5,5,7,8,10],
+    haptic:"breath", safety:"Skip the cold-water step if you have a heart condition, low blood pressure, or faint easily — use a cool damp cloth instead." },
+  { id:"pmr", title:"Squeeze and let go (PMR)", bed:"pad",
+    lines:[
+      "Progressive muscle relaxation. About six minutes. You can stop any time and it still counts.",
+      "Lie down however hurts least. We never squeeze your stomach or pelvic floor tonight — they're already working hard enough.",
+      "Breathe in, curl both hands into fists. Hold five.",
+      "Let go all at once. Notice the warm heavy feeling arriving.",
+      "Shoulders — lift them to your ears. Hold.",
+      "And let them fall, further than you think they can.",
+      "Face — scrunch it all. Eyes, jaw, forehead. Hold.",
+      "Release. Let your face go blank. Nobody's looking.",
+      "Jaw — press teeth together gently. Hold.",
+      "Release, and leave a gap between your teeth. Most people hold cramp-pain in the jaw without knowing.",
+      "Skipping your middle on purpose — rest your hands there instead, warm and still.",
+      "Whole body now. Let the bed hold all of it. Heavy, warm, finished."
+    ],
+    timings:[9,10,6,10,6,7,7,9,6,9,10,12],
+    haptic:"squeeze", safety:"Skip any muscle that pulls on your cramp — skipping is using this correctly." },
+];
+function drawReliefList(){
+  const el=document.getElementById("reliefList");
+  el.innerHTML=RELIEF.map(r=>`
+    <div class="tip"><em>🌿</em><div style="flex:1">
+      <b>${r.title}</b>
+      <div class="exBox" id="ex_${r.id}"></div>
+      <button data-open="${r.id}" style="margin-top:8px">Begin</button>
+      ${r.safety?`<small style="display:block;margin-top:6px">${r.safety}</small>`:""}
+    </div></div>`).join("");
+}
+drawReliefList();
+document.getElementById("reliefList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-open]"); if(!b) return;
+  const id=b.dataset.open, r=RELIEF.find(x=>x.id===id);
+  const box=document.getElementById("ex_"+id);
+  const opening = !box.classList.contains("on");
+  document.querySelectorAll(".exBox.on").forEach(x=>x.classList.remove("on"));
+  if(opening){ box.classList.add("on"); runScript(box, r.lines, r.timings, {bed:r.bed, rewardMsg:"Your body just got taken care of 💗"}); }
+});
+
+const NUTRI=[
+  ["🫚","Ginger","In several trials, ginger worked comparably to NSAIDs for period pain. Fresh or tea, at the first twinge."],
+  ["🥬","Magnesium","Leafy greens, nuts, dark chocolate. Helps muscles relax, including the uterus."],
+  ["🐟","Omega-3","Reduces prostaglandin production over time — fish, walnuts, flax."],
+  ["💧","Water, often","Dehydration makes cramps and headaches sharper. Warm drinks especially help."],
+  ["🚫","What worsens it","Very salty or very sugary food can worsen bloating and mood swings — not forbidden, just worth knowing."]
+];
+document.getElementById("nutrition").innerHTML=NUTRI.map(n=>`<div class="tip"><em>${n[0]}</em><div><b>${n[1]}</b><small>${n[2]}</small></div></div>`).join("");
+
+/* ================= BREATHING: 4-7-8, box, grounding ================= */
+const orb=document.getElementById("orb");
+let bRun=false, bTone=null;
+document.getElementById("bBtn").onclick=function(){
+  if(bRun){ bRun=false; this.textContent="Begin"; orb.style.transform=""; orb.textContent="ready"; Haptics.stopLoop(); if(bTone) bTone.stop(); return; }
+  bRun=true; this.textContent="Stop"; let r=0;
+  const cycle=()=>{
+    if(!bRun) return;
+    orb.style.transitionDuration="4s"; orb.style.transform="scale(1.4)"; orb.textContent="breathe in";
+    Haptics.play(4000);
+    bTone=Sound.breathTone(4,7,8);
+    setTimeout(()=>{ if(!bRun)return; orb.textContent="hold";
+      setTimeout(()=>{ if(!bRun)return; orb.style.transitionDuration="8s"; orb.style.transform="scale(1)"; orb.textContent="out, slowly";
+        setTimeout(()=>{ if(!bRun)return; r++; S.breaths++; save();
+          document.getElementById("bCount").textContent=r+" rounds this session";
+          if(r%4===0) addPoints(10,"4 rounds of breathing — your body noticed");
+          cycle();
+        },8000);
+      },7000);
+    },4000);
+  }; cycle();
+};
+
+let boxRun=false;
+document.getElementById("boxBtn").onclick=function(){
+  if(boxRun){ boxRun=false; this.textContent="Begin box breathing"; orb.style.transform=""; Haptics.stopLoop(); return; }
+  boxRun=true; this.textContent="Stop"; document.querySelectorAll("#nav [data-p=breathe]").length;
+  const labels=["in","hold","out","hold"], secs=[4,4,4,4];
+  let step=0;
+  const tick=()=>{
+    if(!boxRun) return;
+    orb.textContent="box: "+labels[step];
+    orb.style.transitionDuration=secs[step]+"s";
+    orb.style.transform = labels[step]==="in"?"scale(1.35)": labels[step]==="out"?"scale(1)":orb.style.transform;
+    Haptics.play(secs[step]*250);
+    step=(step+1)%4;
+    setTimeout(tick, secs[step===0?3:step-1]*1000 || 4000);
+  };
+  tick();
+};
+
+document.getElementById("gBtn").onclick=function(){
+  const GROUND=["Name 5 things you can see. Say them, even in your head.","Name 4 things you can feel — the blanket, the chair, your own hands.",
+   "Name 3 things you can hear.","Name 2 things you can smell.","Name 1 thing you can taste.",
+   "You're here. In this room. Right now. Nothing bad is happening in this second."];
+  const TIME=[9,9,8,7,6,10];
+  let i=0; this.disabled=true; const btn=this;
+  const step=()=>{ toast(GROUND[i]); srSay(GROUND[i]); Haptics.tap();
+    if(++i<GROUND.length) setTimeout(step, TIME[i-1]*1000);
+    else { btn.disabled=false; addPoints(10,"Grounded 💗"); } };
+  step();
+};
+
+/* ================= BUBBLES ================= */
+const board=document.getElementById("bubbleBoard");
+let bubT=null,pops=0;
+document.getElementById("bubScore").textContent="popped: "+S.pops;
+document.getElementById("bubBtn").onclick=function(){
+  if(bubT){ clearInterval(bubT); bubT=null; board.innerHTML=""; this.textContent="Start"; return; }
+  this.textContent="Stop";
+  bubT=setInterval(()=>{
+    if(board.children.length>22) return;
+    const d=document.createElement("div");
+    const s=26+Math.random()*44;
+    d.className="bub";
+    d.style.width=d.style.height=s+"px";
+    d.style.left=Math.random()*(board.clientWidth-s)+"px";
+    d.style.top=board.clientHeight+"px";
+    d.style.transition="top "+(6+Math.random()*5)+"s linear";
+    board.appendChild(d);
+    requestAnimationFrame(()=>d.style.top="-"+s+"px");
+    setTimeout(()=>d.remove(),12000);
+  },420);
+};
+board.addEventListener("pointerdown",e=>{
+  const b=e.target.closest(".bub"); if(!b)return;
+  b.style.transition="transform .18s, opacity .18s";
+  b.style.transform="scale(1.7)"; b.style.opacity="0";
+  setTimeout(()=>b.remove(),180);
+  pops++; S.pops++; save();
+  Sound.pop(pops); Haptics.play(12);
+  document.getElementById("bubScore").textContent="popped: "+S.pops;
+  if(pops%15===0) addPoints(5,"");
+});
+
+/* ================= SAND GARDEN ================= */
+const sandCanvas=document.getElementById("sand");
+function sizeSand(){ sandCanvas.width=sandCanvas.clientWidth*devicePixelRatio; sandCanvas.height=sandCanvas.clientHeight*devicePixelRatio; drawSandBase(); }
+const sctx=sandCanvas.getContext("2d");
+let grooves=[];
+function drawSandBase(){
+  const w=sandCanvas.width,h=sandCanvas.height;
+  const g=sctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,"#f6e9da"); g.addColorStop(1,"#efd9bd");
+  sctx.fillStyle=g; sctx.fillRect(0,0,w,h);
+  grooves.forEach(pts=>{
+    sctx.strokeStyle="rgba(150,110,70,.25)"; sctx.lineWidth=6*devicePixelRatio; sctx.lineCap="round"; sctx.lineJoin="round";
+    sctx.beginPath(); pts.forEach((p,i)=>i?sctx.lineTo(p[0],p[1]):sctx.moveTo(p[0],p[1])); sctx.stroke();
+    sctx.strokeStyle="rgba(255,255,255,.35)"; sctx.lineWidth=2*devicePixelRatio;
+    sctx.beginPath(); pts.forEach((p,i)=>i?sctx.lineTo(p[0],p[1]):sctx.moveTo(p[0],p[1])); sctx.stroke();
+  });
+}
+let drawing=false,curPts=null,lastPt=null,sandNode=null;
+function sandStart(x,y){ drawing=true; curPts=[[x,y]]; lastPt=[x,y]; }
+function sandMove(x,y){
+  if(!drawing) return;
+  const dx=x-lastPt[0], dy=y-lastPt[1]; const dist=Math.hypot(dx,dy);
+  curPts.push([x,y]); lastPt=[x,y]; drawSandBase();
+  sctx.strokeStyle="rgba(150,110,70,.25)"; sctx.lineWidth=6*devicePixelRatio; sctx.lineCap="round"; sctx.lineJoin="round";
+  sctx.beginPath(); curPts.forEach((p,i)=>i?sctx.lineTo(p[0],p[1]):sctx.moveTo(p[0],p[1])); sctx.stroke();
+  if(dist>2){ Haptics.play(Math.min(30,6+dist/3)); if(Math.random()<0.4) Sound.blip(180+Math.random()*60,0.12,0.015,"triangle"); }
+}
+function sandEnd(){ if(drawing && curPts.length>2) grooves.push(curPts); drawing=false; }
+sandCanvas.addEventListener("pointerdown",e=>{ const r=sandCanvas.getBoundingClientRect(); sandStart((e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio); });
+sandCanvas.addEventListener("pointermove",e=>{ if(!drawing)return; const r=sandCanvas.getBoundingClientRect(); sandMove((e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio); });
+window.addEventListener("pointerup",sandEnd);
+document.getElementById("sandClear").onclick=()=>{ grooves=[]; drawSandBase(); toast("Smoothed. Nothing to undo."); };
+window.addEventListener("resize",()=>{ if(readySand) sizeSand(); });
+
+/* ================= COLOUR BREATHING ================= */
+const COLORS=[["#ffd6e0","calm","Soft pink. Let your shoulders drop an inch."],
+ ["#d9c8f5","safe","Lavender. You're allowed to take up space today."],
+ ["#c8ecdf","clear","Mint. Breathe out the tightness in your jaw."],
+ ["#ffe3c2","warm","Peach. Imagine warmth spreading through your belly."],
+ ["#cfe3ff","cool","Sky. Cool air in, warm air out."],
+ ["#f6e0c8","held","Sand. Heavy body, quiet mind."],
+ ["#e6f2c8","fresh","Green. Something in you is renewing right now."],
+ ["#f3d0f0","gentle","Orchid. Be as kind to yourself as you'd be to a friend."]];
+document.getElementById("palette").innerHTML=COLORS.map((c,i)=>`<button class="swatch" style="background:${c[0]}" data-c="${i}"></button>`).join("");
+document.getElementById("palette").addEventListener("click",e=>{
+  const b=e.target.closest("[data-c]"); if(!b)return;
+  const c=COLORS[+b.dataset.c];
+  document.body.style.background=`radial-gradient(1200px 800px at 50% 0%, ${c[0]}, var(--page) 70%)`;
+  document.getElementById("colMsg").textContent=c[2];
+  Sound.blip(440,1.4,0.04); Haptics.play(25);
+});
+
+/* ================= CREATURE ================= */
+const creature=document.getElementById("creature");
+let purrOn=false, strokes=0;
+creature.addEventListener("pointerdown",()=>{ purrOn=true; strokes++; creature.style.transform="scale(1.15)"; Haptics.loop([40,60],1400); Sound.blip(80+Math.random()*20,1.2,0.02,"sine"); });
+window.addEventListener("pointerup",()=>{ if(purrOn){ purrOn=false; creature.style.transform="scale(1)"; Haptics.stopLoop();
+  document.getElementById("creatureMsg").textContent = strokes<3? "It's warming up to you.": "It's completely content. It always is.";
+}});
+
+/* ================= FOREST (focus / study timer) ================= */
+const TREE_STAGES=["🌰","🌱","🌿","🪴","🌳","🌲"];
+const FOREST_EMOJI=["🌲","🌳","🌴","🎋","🌵"];
+let growTotal=600, growLeft=600, growRunning=false, growId=null, growLabel="";
+document.getElementById("durChips").addEventListener("click",e=>{
+  const b=e.target.closest("[data-min]"); if(!b || growRunning) return;
+  document.querySelectorAll("#durChips .durChip").forEach(x=>x.classList.toggle("on",x===b));
+  growTotal=+b.dataset.min*60; growLeft=growTotal;
+  document.getElementById("growTimer").textContent=fmt(growLeft);
+});
+function witherTree(reason){
+  if(!growRunning) return;
+  growRunning=false; clearInterval(growId); growId=null;
+  document.getElementById("treeStage").textContent="🥀";
+  document.getElementById("treeStage").classList.add("withered");
+  document.getElementById("growHint").textContent="This one withered — "+reason+" No penalty, no lost points. Plant another whenever.";
+  document.getElementById("growStart").style.display=""; document.getElementById("growStart").textContent="Plant & start";
+  document.getElementById("growStop").style.display="none";
+  Haptics.play([60,50,60]);
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden && growRunning) witherTree("you stepped away from the tab.");
+});
+document.getElementById("growStart").onclick=function(){
+  growLabel=document.getElementById("growLabel").value.trim();
+  growLeft=growTotal; growRunning=true;
+  document.getElementById("treeStage").classList.remove("withered");
+  document.getElementById("treeStage").textContent=TREE_STAGES[0];
+  document.getElementById("growHint").textContent="Growing… stay on this tab. Switching apps or tabs will wither it.";
+  this.style.display="none"; document.getElementById("growStop").style.display="";
+  Sound.chime([392,523.3],0.8,0.05); Haptics.confirm();
+  growId=setInterval(()=>{
+    growLeft--;
+    document.getElementById("growTimer").textContent=fmt(growLeft);
+    const progress=1-(growLeft/growTotal);
+    const stage=Math.min(TREE_STAGES.length-1, Math.floor(progress*TREE_STAGES.length));
+    document.getElementById("treeStage").textContent=TREE_STAGES[stage];
+    if(growLeft<=0){
+      clearInterval(growId); growId=null; growRunning=false;
+      const emoji=FOREST_EMOJI[Math.floor(Math.random()*FOREST_EMOJI.length)];
+      document.getElementById("treeStage").textContent=emoji;
+      document.getElementById("growHint").textContent="Grown. It's in your forest now, and it never dies.";
+      document.getElementById("growStart").style.display=""; document.getElementById("growStart").textContent="Plant another";
+      document.getElementById("growStop").style.display="none";
+      S.forest.push({date:today(), minutes:Math.round(growTotal/60), label:growLabel, completed:true, emoji});
+      save(); drawForest();
+      addPoints(Math.max(6,Math.round(growTotal/60/2)), (growLabel?`"${growLabel}" — `:"")+"grown 🌳");
+    }
+  },1000);
+};
+document.getElementById("growStop").onclick=()=>witherTree("you gave up early, and that's completely fine.");
+function drawForest(){
+  const grid=document.getElementById("forestGrid");
+  const done=S.forest.filter(f=>f.completed);
+  if(!done.length){ grid.innerHTML=`<span style="font-size:14px;color:var(--ink-soft)">Nothing planted yet — your first tree is one focused session away.</span>`; }
+  else grid.innerHTML=done.slice(-120).map(f=>`<span title="${(f.label||"focus session")+" — "+f.minutes+" min on "+f.date}">${f.emoji||"🌲"}</span>`).join("");
+  const totalMin=done.reduce((a,b)=>a+b.minutes,0);
+  const h=Math.floor(totalMin/60), mn=totalMin%60;
+  document.getElementById("forestSummary").textContent = done.length
+    ? `${done.length} tree${done.length>1?"s":""} planted · ${h}h ${mn}m of focused time altogether.`
+    : "Nothing planted yet — your first tree is one focused session away.";
+}
+
+/* ================= 10 MORE GAMES ================= */
+
+/* -- Kaleidoscope -- */
+const kCanvas=document.getElementById("kaleido"), kctx=kCanvas.getContext("2d");
+let kHue=200, kDrawing=false, kLast=null;
+function kaleidoBase(){ kctx.fillStyle="#120c16"; kctx.fillRect(0,0,kCanvas.width,kCanvas.height); }
+function sizeKaleido(){ kCanvas.width=kCanvas.clientWidth*devicePixelRatio; kCanvas.height=kCanvas.clientHeight*devicePixelRatio; kaleidoBase(); }
+function kPoint(e){ const r=kCanvas.getBoundingClientRect(); return [(e.clientX-r.left)*devicePixelRatio,(e.clientY-r.top)*devicePixelRatio]; }
+kCanvas.addEventListener("pointerdown",e=>{ kDrawing=true; kLast=kPoint(e); });
+kCanvas.addEventListener("pointermove",e=>{
+  if(!kDrawing) return;
+  const p=kPoint(e), cx=kCanvas.width/2, cy=kCanvas.height/2;
+  const dx0=kLast[0]-cx, dy0=kLast[1]-cy, dx1=p[0]-cx, dy1=p[1]-cy;
+  kHue=(kHue+1.2)%360;
+  kctx.strokeStyle=`hsla(${kHue},80%,72%,0.85)`; kctx.lineWidth=2.4*devicePixelRatio; kctx.lineCap="round";
+  for(let k=0;k<8;k++){
+    const ang=k*Math.PI/4, cos=Math.cos(ang), sin=Math.sin(ang);
+    const rx0=dx0*cos-dy0*sin, ry0=dx0*sin+dy0*cos, rx1=dx1*cos-dy1*sin, ry1=dx1*sin+dy1*cos;
+    kctx.beginPath(); kctx.moveTo(cx+rx0,cy+ry0); kctx.lineTo(cx+rx1,cy+ry1); kctx.stroke();
+    kctx.beginPath(); kctx.moveTo(cx-rx0,cy+ry0); kctx.lineTo(cx-rx1,cy+ry1); kctx.stroke();
+  }
+  if(Math.hypot(dx1-dx0,dy1-dy0)>3){ Sound.pop(Math.floor((p[1]/kCanvas.height)*8)); Haptics.play(10); }
+  kLast=p;
+});
+window.addEventListener("pointerup",()=>kDrawing=false);
+document.getElementById("kaleidoClear").onclick=()=>{ kaleidoBase(); toast("Cleared — fresh canvas."); };
+window.addEventListener("resize",()=>{ if(readyKaleido) sizeKaleido(); });
+
+/* -- Worry lantern -- */
+const lanternSky=document.getElementById("lanternSky");
+document.getElementById("lanternRelease").onclick=()=>{
+  const input=document.getElementById("lanternInput"); const text=input.value.trim();
+  const el=document.createElement("div"); el.className="lantern"; el.textContent="🏮";
+  el.style.left=(20+Math.random()*60)+"%"; lanternSky.appendChild(el);
+  requestAnimationFrame(()=>{
+    el.style.transition="transform 5s ease-out, opacity 5s ease-out";
+    el.style.transform="translateY(-160px) translateX("+(Math.random()*40-20)+"px)"; el.style.opacity="1"; el.style.opacity="0";
+  });
+  setTimeout(()=>el.remove(),5200);
+  input.value="";
+  Sound.chime([392,523.3,659.3],1.4,0.035);
+  Haptics.play([20,150,20,150,20,300]);
+  toast(text?"Let go.":"Released.");
+};
+
+/* -- Koi pond -- */
+const koiCanvas=document.getElementById("koi"), koictx=koiCanvas.getContext("2d");
+let koiFish=[], koiRipples=[];
+function sizeKoi(){
+  koiCanvas.width=koiCanvas.clientWidth*devicePixelRatio; koiCanvas.height=koiCanvas.clientHeight*devicePixelRatio;
+  if(!koiFish.length) for(let i=0;i<4;i++) koiFish.push({x:Math.random()*koiCanvas.width,y:Math.random()*koiCanvas.height,a:Math.random()*Math.PI*2,speed:0.4+Math.random()*0.4,hue:[20,320,45,0][i%4]});
+}
+function koiFrame(){
+  const w=koiCanvas.width,h=koiCanvas.height;
+  const g=koictx.createLinearGradient(0,0,0,h); g.addColorStop(0,"#bfe3e0"); g.addColorStop(1,"#8fc7c9");
+  koictx.fillStyle=g; koictx.fillRect(0,0,w,h);
+  koiRipples=koiRipples.filter(r=>r.r<Math.max(w,h)*0.5);
+  koiRipples.forEach(r=>{ r.r+=2.4*devicePixelRatio;
+    koictx.strokeStyle=`rgba(255,255,255,${Math.max(0,0.5-r.r/(300*devicePixelRatio))})`; koictx.lineWidth=2*devicePixelRatio;
+    koictx.beginPath(); koictx.arc(r.x,r.y,r.r,0,Math.PI*2); koictx.stroke(); });
+  koiFish.forEach(f=>{
+    f.a+=0.01; f.x+=Math.cos(f.a)*f.speed*devicePixelRatio; f.y+=Math.sin(f.a*0.6)*f.speed*devicePixelRatio*0.5;
+    if(f.x<0)f.x=w; if(f.x>w)f.x=0; if(f.y<0)f.y=h; if(f.y>h)f.y=0;
+    koictx.save(); koictx.translate(f.x,f.y); koictx.rotate(f.a); koictx.fillStyle=`hsl(${f.hue},70%,55%)`;
+    koictx.beginPath(); koictx.ellipse(0,0,14*devicePixelRatio,6*devicePixelRatio,0,0,Math.PI*2); koictx.fill();
+    koictx.beginPath(); koictx.moveTo(-14*devicePixelRatio,0); koictx.lineTo(-22*devicePixelRatio,-6*devicePixelRatio); koictx.lineTo(-22*devicePixelRatio,6*devicePixelRatio); koictx.closePath(); koictx.fill();
+    koictx.restore();
+  });
+  requestAnimationFrame(koiFrame);
+}
+function koiTap(e){
+  const r=koiCanvas.getBoundingClientRect();
+  koiRipples.push({x:(e.clientX-r.left)*devicePixelRatio,y:(e.clientY-r.top)*devicePixelRatio,r:0});
+  Sound.blip(300+Math.random()*200,0.5,0.03,"sine"); Haptics.play(15);
+}
+koiCanvas.addEventListener("pointerdown",koiTap);
+koiCanvas.addEventListener("pointermove",e=>{ if(e.buttons===1) koiTap(e); });
+window.addEventListener("resize",()=>{ if(readyKoi) sizeKoi(); });
+
+/* -- The hug -- */
+const hugBox=document.getElementById("hugBox");
+let hugBed=null;
+hugBox.addEventListener("pointerdown",()=>{
+  hugBox.classList.add("pressing"); hugBox.textContent="holding…";
+  hugBed=Sound.bed("deep"); Haptics.loop([700,300],20000);
+});
+function endHug(){
+  if(!hugBox.classList.contains("pressing")) return;
+  hugBox.classList.remove("pressing"); hugBox.textContent="press and hold";
+  if(hugBed){ hugBed.stop(2); hugBed=null; } Haptics.stopLoop();
+}
+window.addEventListener("pointerup",endHug);
+
+/* -- Stress ball -- */
+const stressBall=document.getElementById("stressBall");
+let ballDown=0, ballRaf=null;
+stressBall.addEventListener("pointerdown",()=>{
+  ballDown=Date.now();
+  const tick=()=>{ if(!ballDown) return; const squeeze=Math.min(1,(Date.now()-ballDown)/1200);
+    stressBall.style.transform=`scale(${1+squeeze*0.35},${1-squeeze*0.32})`; ballRaf=requestAnimationFrame(tick); };
+  tick(); Haptics.play(20);
+});
+function releaseBall(){
+  if(!ballDown) return;
+  const held=Date.now()-ballDown; ballDown=0; cancelAnimationFrame(ballRaf);
+  stressBall.style.transition="transform .35s cubic-bezier(.34,1.8,.64,1)"; stressBall.style.transform="scale(1)";
+  setTimeout(()=>stressBall.style.transition="transform .12s",400);
+  const p=Math.min(1,held/1200);
+  Sound.blip(320-p*140,0.5,0.04,"sine"); Haptics.play([Math.min(120,40+held/10)]);
+}
+window.addEventListener("pointerup",releaseBall);
+
+/* -- Rhythm pad -- */
+const padGrid=document.getElementById("padGrid");
+const PAD_NOTES=[261.6,293.7,329.6,392.0,440.0,523.3,587.3,659.3,784.0,880.0,987.8,1046.5];
+padGrid.innerHTML=Array.from({length:12},(_,i)=>`<div class="padCell" data-n="${i}"></div>`).join("");
+padGrid.addEventListener("pointerdown",e=>{
+  const c=e.target.closest(".padCell"); if(!c)return;
+  c.classList.add("hit"); setTimeout(()=>c.classList.remove("hit"),140);
+  Sound.blip(PAD_NOTES[+c.dataset.n],0.45,0.055,"sine"); Haptics.play(16);
+});
+
+/* -- The blob -- */
+const blobCanvas=document.getElementById("blob"), blobctx=blobCanvas.getContext("2d");
+let blobPos=null, blobTarget=null, blobHue=310;
+function sizeBlob(){
+  blobCanvas.width=blobCanvas.clientWidth*devicePixelRatio; blobCanvas.height=blobCanvas.clientHeight*devicePixelRatio;
+  if(!blobPos) blobPos={x:blobCanvas.width/2,y:blobCanvas.height/2};
+  if(!blobTarget) blobTarget={x:blobPos.x,y:blobPos.y};
+}
+function blobFrame(){
+  const w=blobCanvas.width,h=blobCanvas.height; blobctx.clearRect(0,0,w,h);
+  blobPos.x+=(blobTarget.x-blobPos.x)*0.12; blobPos.y+=(blobTarget.y-blobPos.y)*0.12;
+  const wob=Math.sin(Date.now()/220)*6*devicePixelRatio; blobHue+=0.15;
+  const grad=blobctx.createRadialGradient(blobPos.x-10,blobPos.y-14,4,blobPos.x,blobPos.y,60*devicePixelRatio);
+  grad.addColorStop(0,`hsla(${blobHue%360},85%,85%,0.95)`); grad.addColorStop(1,`hsla(${(blobHue+40)%360},75%,65%,0.85)`);
+  blobctx.fillStyle=grad; blobctx.beginPath();
+  blobctx.ellipse(blobPos.x,blobPos.y,(46+wob*0.4)*devicePixelRatio,(46-wob*0.4)*devicePixelRatio,0,0,Math.PI*2); blobctx.fill();
+  requestAnimationFrame(blobFrame);
+}
+function blobMove(e){ const r=blobCanvas.getBoundingClientRect(); blobTarget={x:(e.clientX-r.left)*devicePixelRatio,y:(e.clientY-r.top)*devicePixelRatio}; }
+blobCanvas.addEventListener("pointerdown",e=>{ blobMove(e); Haptics.play(14); Sound.blip(200+Math.random()*80,0.5,0.02,"sine"); });
+blobCanvas.addEventListener("pointermove",e=>{ if(e.buttons===1) blobMove(e); });
+window.addEventListener("resize",()=>{ if(readyBlob) sizeBlob(); });
+
+/* -- Your own sky (constellations) -- */
+const starsCanvas=document.getElementById("stars"), starsctx=starsCanvas.getContext("2d");
+let starPoints=[], starLines=[], lastStar=null;
+function newSky(){
+  starPoints=[]; for(let i=0;i<14;i++) starPoints.push({x:Math.random()*starsCanvas.width,y:Math.random()*starsCanvas.height,tw:Math.random()*Math.PI*2});
+  starLines=[]; lastStar=null;
+}
+function sizeStars(){ starsCanvas.width=starsCanvas.clientWidth*devicePixelRatio; starsCanvas.height=starsCanvas.clientHeight*devicePixelRatio; newSky(); }
+function drawSky(){
+  const w=starsCanvas.width,h=starsCanvas.height;
+  starsctx.fillStyle="#0c0a16"; starsctx.fillRect(0,0,w,h);
+  starsctx.strokeStyle="rgba(230,210,255,.55)"; starsctx.lineWidth=1.4*devicePixelRatio;
+  starLines.forEach(l=>{ starsctx.beginPath(); starsctx.moveTo(l[0].x,l[0].y); starsctx.lineTo(l[1].x,l[1].y); starsctx.stroke(); });
+  starPoints.forEach(p=>{ const tw=0.6+Math.sin(Date.now()/500+p.tw)*0.4; starsctx.fillStyle=`rgba(255,255,255,${tw})`;
+    starsctx.beginPath(); starsctx.arc(p.x,p.y,3*devicePixelRatio,0,Math.PI*2); starsctx.fill(); });
+  requestAnimationFrame(drawSky);
+}
+starsCanvas.addEventListener("pointerdown",e=>{
+  const r=starsCanvas.getBoundingClientRect();
+  const x=(e.clientX-r.left)*devicePixelRatio, y=(e.clientY-r.top)*devicePixelRatio;
+  let nearest=null, best=1e9;
+  starPoints.forEach(p=>{ const d=Math.hypot(p.x-x,p.y-y); if(d<best){best=d; nearest=p;} });
+  if(nearest && best<40*devicePixelRatio){
+    if(lastStar && lastStar!==nearest){ starLines.push([lastStar,nearest]); Sound.pop(Math.floor(Math.random()*8)); Haptics.play(14); }
+    lastStar=nearest;
+  }
+});
+document.getElementById("starsNew").onclick=newSky;
+window.addEventListener("resize",()=>{ if(readyStars) sizeStars(); });
+
+/* -- Gratitude jar -- */
+function drawJar(){
+  const wrap=document.getElementById("jarStones");
+  const STONES=["💎","🔷","🟣","🟢","🔶","⭐","💠"];
+  wrap.innerHTML=S.gratitude.map((g,i)=>`<span title="${g.t.replace(/"/g,'&quot;')}">${STONES[i%STONES.length]}</span>`).join("");
+  document.getElementById("jarCount").textContent = S.gratitude.length? `${S.gratitude.length} small good thing${S.gratitude.length>1?"s":""}, kept safe. Hover a gem to see it.` : "Empty for now — add whenever you have one.";
+}
+document.getElementById("jarAdd").onclick=()=>{
+  const input=document.getElementById("jarInput"); const val=input.value.trim();
+  if(!val) return toast("Type a small good thing first, or skip for today.");
+  S.gratitude.unshift({t:val,d:today()}); S.gratitude=S.gratitude.slice(0,200);
+  input.value=""; save(); drawJar();
+  Sound.chime([440,554.4],0.8,0.045); Haptics.play([20,30,20]);
+  addPoints(4,"Kept.");
+};
+
+/* -- Wind chimes -- */
+const CHIME_NOTES=[392,440,523.3,587.3,659.3];
+const chimeRow=document.getElementById("chimeRow");
+chimeRow.innerHTML=CHIME_NOTES.map((n,i)=>`<div class="chime" data-i="${i}" style="animation-delay:${i*0.3}s">🎐</div>`).join("");
+function ringChime(el,note){ el.classList.remove("ring"); void el.offsetWidth; el.classList.add("ring"); Sound.blip(note,1.6,0.05,"sine"); Haptics.play(18); }
+chimeRow.addEventListener("pointerdown",e=>{ const c=e.target.closest(".chime"); if(!c)return; ringChime(c,CHIME_NOTES[+c.dataset.i]); });
+let breezeIv=null;
+function startBreeze(){
+  if(breezeIv) clearInterval(breezeIv);
+  breezeIv=setInterval(()=>{
+    if(!S.breezeOn || document.querySelector('.page.on')?.id!=="play" || Math.random()<0.5) return;
+    const chimes=[...chimeRow.children]; const c=chimes[Math.floor(Math.random()*chimes.length)];
+    if(c) ringChime(c, CHIME_NOTES[+c.dataset.i]);
+  },6000);
+}
+document.getElementById("breezeToggle").onclick=function(){ S.breezeOn=!S.breezeOn; save(); this.textContent="🍃 Breeze: "+(S.breezeOn?"on":"off"); };
+document.getElementById("breezeToggle").textContent="🍃 Breeze: "+(S.breezeOn?"on":"off");
+startBreeze();
+
+/* ================= AFFIRMATIONS ================= */
+const AFF=["Your body isn't betraying you. It's doing something ancient and enormous.",
+ "You don't have to be productive today. Existing is enough.",
+ "This pain has an end date. You've reached it every single time so far.",
+ "Being tearful right now is chemistry, not character.",
+ "You're allowed to cancel things. The plan will survive without you.",
+ "Rest isn't a reward for finishing. It's part of the work.",
+ "Nobody who loves you is keeping score of the days you struggled.",
+ "You've handled every hard day so far with a 100% success rate.",
+ "Take the painkiller. Suffering earns you nothing.",
+ "Softness is not weakness. You're being kind to a body that's working hard.",
+ "The feeling is real. The conclusion it's handing you might not be.",
+ "Warm drink, warm belly, quiet room. That's a whole plan and it counts.",
+ "You're not behind. You're a person with a body, in a hard week.",
+ "You are so much more than how you feel today."];
+function newAff(){ document.getElementById("affirm").textContent=AFF[Math.floor(Math.random()*AFF.length)]; }
+document.getElementById("aBtn").onclick=()=>{ newAff(); Haptics.tap(); };
+newAff();
+
+/* ================= MIND EXERCISES ================= */
+const EXERCISES=[
+  { id:"selfcompassion", title:"The self-compassion break", bed:"pad",
+    lines:["Put one hand on your chest, or low on your belly if that's where it hurts.",
+      "Let it rest there. Feel the warmth through your skin.",
+      "First: this hurts. Say it plainly.",
+      "You're not overreacting. You're having a hard moment.",
+      "Second: you're not the only one. Right now, other people are curled up in exactly this shape.",
+      "Pain is part of having a body. It isn't a personal failure.",
+      "Third — what do you actually need to hear? Try this, quietly: I'm here.",
+      "I'm sorry this hurts. I'm not going anywhere.",
+      "Keep your hand there for three more breaths.",
+      "That's the whole thing. You just gave yourself something real."],
+    timings:[8,8,6,9,10,10,9,9,10,10] },
+  { id:"hormonelens", title:"The hormone lens", bed:"deep",
+    lines:["In the days before your period, oestrogen and progesterone fall off a cliff.",
+      "Serotonin falls with them — serotonin is a lot of what makes ordinary things feel bearable.",
+      "So everything painful gets its volume turned up. That's chemistry. It isn't character.",
+      "The feeling is real. The conclusion you're drawing from it might not be.",
+      "Here's the rule: don't make permanent decisions about your life, relationships, or worth in the five days before your period.",
+      "Not because you can't think — because the lens is tinted, and you already know it's tinted.",
+      "You can feel every bit of it. Just don't sign anything.",
+      "If it's still true on day 8, it's real, and you'll deal with it then — with the brain you'd use to read a contract."],
+    timings:[9,10,10,9,12,10,8,12] },
+  { id:"wave", title:"Riding the wave", bed:"ocean",
+    lines:["Cramps come in waves. This one has a top, and you haven't been shown it yet.",
+      "We're not going to fight it. We're going to ride it.",
+      "On the way up: breathe in slow, and let your belly stay soft. Don't brace.",
+      "Bracing turns a bad wave into a worse one — the tight is its own pain.",
+      "Jaw loose. Shoulders down. Hands open.",
+      "At the top, don't hold your breath. Small breaths if you need them.",
+      "Say it: this is the top. Tops don't last.",
+      "Feel it easing? That's the proof. Every wave you've ever had has come down. Every single one.",
+      "In the gap, rest properly — don't spend it bracing for the next one."],
+    timings:[10,6,10,11,7,9,7,10,10] },
+  { id:"defusion", title:"Take the teeth out of a thought", bed:null,
+    lines:["Something's been going round and round. Let's take its teeth out.",
+      "Say the thought exactly as it sounds in your head — don't tidy it up.",
+      "Now put five words in front of it: I'm having the thought that...",
+      "Feel that? A little space just opened.",
+      "One more layer: I notice I'm having the thought that...",
+      "Same words. But now you're watching them, not underneath them.",
+      "You don't have to argue with it. You also don't have to believe it.",
+      "It's a sentence your brain wrote while you were in pain. Sentences can be wrong.",
+      "The thought can stay. It just doesn't get to drive."],
+    timings:[7,10,8,7,9,9,8,9,8] },
+  { id:"acceptance", title:"When it can't be fixed right now", bed:"deep",
+    lines:["Some of tonight can't be fixed. Let's not pretend otherwise.",
+      "Accepting isn't approving. You're allowed to hate this and still stop fighting it.",
+      "Fighting pain costs energy. Bracing against it makes it hurt more — that's muscles, not attitude.",
+      "This is how it is right now.",
+      "I can't change this minute. I can change how hard I'm gripping it.",
+      "This is painful, and I'm still here.",
+      "It's been this bad before and it passed. Not because I did it right — because it passes.",
+      "Let your jaw come unstuck. And your shoulders. And your hands.",
+      "That's what acceptance actually is. It's a body thing before it's a belief."],
+    timings:[8,10,11,7,10,7,11,10,10] },
+];
+function drawEx(){
+  document.getElementById("exList").innerHTML=EXERCISES.map(x=>`
+    <div class="tip"><em>💭</em><div style="flex:1">
+      <b>${x.title}</b>
+      <div class="exBox" id="mex_${x.id}"></div>
+      <button data-mopen="${x.id}" style="margin-top:8px">Begin</button>
+    </div></div>`).join("");
+}
+drawEx();
+document.getElementById("exList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-mopen]"); if(!b) return;
+  const id=b.dataset.mopen, x=EXERCISES.find(v=>v.id===id);
+  const box=document.getElementById("mex_"+id);
+  const opening=!box.classList.contains("on");
+  document.querySelectorAll(".exBox.on").forEach(v=>v.classList.remove("on"));
+  if(opening){ box.classList.add("on"); runScript(box, x.lines, x.timings, {bed:x.bed, rewardMsg:"You just did something real for your mind 💗"}); }
+});
+
+/* ================= JOURNAL ================= */
+document.getElementById("jSave").onclick=()=>{
+  const t=document.getElementById("jText");
+  if(!t.value.trim()) return toast("Write a little first, whenever you're ready");
+  S.journal.unshift({d:new Date().toLocaleString(),t:t.value.trim()});
+  S.journal=S.journal.slice(0,80); t.value=""; save(); drawJournal(); addPoints(10,"Let out and saved");
+};
+function drawJournal(){
+  document.getElementById("jList").innerHTML=S.journal.map((e,i)=>
+    `<div class="entry"><time>${e.d}</time>${e.t.replace(/</g,"&lt;")}
+     <div><button data-j="${i}" style="margin-top:8px;padding:4px 12px;font-size:12px">delete</button></div></div>`).join("");
+}
+document.getElementById("jList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-j]"); if(!b)return;
+  S.journal.splice(+b.dataset.j,1); save(); drawJournal();
+});
+
+/* ================= FACTS ================= */
+const FACTS=[
+ ["🧬","Prostaglandins cause the cramps","They make your uterus contract to shed its lining. High levels = stronger pain — a measurable chemical fact, not low pain tolerance."],
+ ["📉","The mood dip is a hormone cliff","Oestrogen and progesterone fall sharply before your period, dragging serotonin down with them. Low mood is a symptom, like the cramps."],
+ ["🛌","The exhaustion is real","Blood loss, disrupted sleep and higher body temperature all cost energy. You're not lazy this week."],
+ ["🍽️","Cravings make sense","Your body burns slightly more energy in the luteal phase and magnesium drops — feed it."],
+ ["🔁","It's cyclical, not permanent","Whatever you're feeling today, your hormones will have moved by next week."]
+];
+document.getElementById("facts").innerHTML=FACTS.map(f=>`<div class="tip"><em>${f[0]}</em><div><b>${f[1]}</b><small>${f[2]}</small></div></div>`).join("");
+
+/* ================= CYCLE + CALENDAR + HEALTH LOG ================= */
+function avgCycleLength(){
+  const starts=[...S.cycleStarts].sort();
+  if(starts.length<2) return 28;
+  let gaps=[];
+  for(let i=1;i<starts.length;i++){
+    const g=Math.round((new Date(starts[i])-new Date(starts[i-1]))/864e5);
+    if(g>=15 && g<=60) gaps.push(g);
+  }
+  if(!gaps.length) return 28;
+  return Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
+}
+function lastPeriodStart(){
+  if(!S.cycleStarts.length) return null;
+  return [...S.cycleStarts].sort().slice(-1)[0];
+}
+document.getElementById("startToday").onclick=()=>{
+  const t=today();
+  if(!S.cycleStarts.includes(t)) S.cycleStarts.push(t);
+  S.cycleStart=t; save(); drawCycle(); addPoints(5,"Logged — thank you for keeping track 💗");
+};
+function drawCycle(){
+  const el=document.getElementById("cycleMsg");
+  const last=lastPeriodStart();
+  if(!last){ el.textContent="Nothing logged yet — tap the button on the first day your period starts."; return; }
+  const day=Math.floor((new Date(today())-new Date(last))/864e5)+1;
+  const len=avgCycleLength();
+  const phase = day<=5?["Period","Rest, heat, iron-rich food. Low energy is correct here, not a failure."]
+    : day<=13?["Rising","Energy climbing — good days for plans, movement, harder tasks."]
+    : day<=16?["Ovulation","Usually your brightest stretch. Use it if you can."]
+    : day<=len?["Luteal / PMS","Mood dips and irritability live here. Lower your expectations of yourself on purpose — see the Hormone Lens exercise."]
+    : ["Late","Your period is likely due or close. Keep supplies handy."];
+  const nextDate=new Date(last); nextDate.setDate(nextDate.getDate()+len);
+  el.innerHTML=`<b>Day ${day}</b> of an average ${len}-day cycle · ${phase[0]}<br>
+    <span style="color:var(--ink-soft)">${phase[1]}</span><br>
+    <span style="color:var(--ink-soft)">Next period expected around ${nextDate.toLocaleDateString(undefined,{month:"short",day:"numeric"})} — an estimate, not a promise.</span>`;
+}
+
+let calView=new Date();
+const SYMPTOMS=["Cramps","Headache","Bloating","Fatigue","Nausea","Back pain","Acne","Tender breasts","Mood swings","Cravings"];
+function dayInfo(dateStr){
+  const d=new Date(dateStr);
+  const starts=[...S.cycleStarts].sort();
+  const len=avgCycleLength();
+  let isPeriod=false, isPredicted=false;
+  for(const s of starts){
+    const diff=Math.floor((d-new Date(s))/864e5);
+    if(diff>=0 && diff<5) isPeriod=true;
+  }
+  if(starts.length){
+    const last=new Date(starts[starts.length-1]);
+    let cursor=new Date(last);
+    for(let i=0;i<6;i++){
+      cursor=new Date(cursor); cursor.setDate(cursor.getDate()+len);
+      const diff=Math.floor((d-cursor)/864e5);
+      if(diff>=0 && diff<5 && cursor>new Date()) isPredicted=true;
+      if(cursor>d && i>0) break;
+    }
+  }
+  const studyMin=S.forest.filter(f=>f.completed && f.date===dateStr).reduce((a,b)=>a+b.minutes,0);
+  return { isPeriod, isPredicted, mood: S.moods[dateStr], log: S.logs[dateStr]||null, studyMin };
+}
+function drawCalendar(){
+  const y=calView.getFullYear(), m=calView.getMonth();
+  document.getElementById("calTitle").textContent=calView.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+  const dowEl=document.getElementById("calDow");
+  dowEl.innerHTML=["S","M","T","W","T","F","S"].map(d=>`<div class="calDow">${d}</div>`).join("");
+  const first=new Date(y,m,1), startPad=first.getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  let cells=[];
+  for(let i=0;i<startPad;i++) cells.push(`<div class="calCell empty"></div>`);
+  for(let dnum=1;dnum<=daysInMonth;dnum++){
+    const dateStr=new Date(y,m,dnum).toISOString().slice(0,10);
+    const info=dayInfo(dateStr);
+    const isToday=dateStr===today();
+    const cls=["calCell", info.isPeriod?"period":(info.isPredicted?"predicted":""), isToday?"today":""].filter(Boolean).join(" ");
+    cells.push(`<div class="${cls}" data-date="${dateStr}">
+      <div>${dnum}</div>
+      <div class="cmood">${info.mood!=null?MOODS[info.mood][0]:""}</div>
+      ${info.studyMin?`<div class="cstudy">${info.studyMin}m</div>`:""}
+    </div>`);
+  }
+  document.getElementById("calGrid").innerHTML=cells.join("");
+}
+document.getElementById("calPrev").onclick=()=>{ calView.setMonth(calView.getMonth()-1); drawCalendar(); };
+document.getElementById("calNext").onclick=()=>{ calView.setMonth(calView.getMonth()+1); drawCalendar(); };
+
+/* ---- day detail sheet ---- */
+const daySheetOverlay=document.getElementById("daySheetOverlay");
+let sheetDate=null;
+document.getElementById("symChips").innerHTML=SYMPTOMS.map(s=>`<button data-sym="${s}">${s}</button>`).join("");
+function openDaySheet(dateStr){
+  sheetDate=dateStr;
+  const log=S.logs[dateStr]||{flow:"",cramp:0,sleep:"",water:"",symptoms:[],notes:""};
+  document.getElementById("daySheetTitle").textContent=new Date(dateStr).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  document.querySelectorAll("#flowChips [data-flow]").forEach(b=>b.classList.toggle("on", b.dataset.flow===(log.flow||"")));
+  document.querySelectorAll("#crampChips [data-cramp]").forEach(b=>b.classList.toggle("on", +b.dataset.cramp===(log.cramp||0)));
+  document.getElementById("sleepInput").value=log.sleep||"";
+  document.getElementById("waterInput").value=log.water||"";
+  document.querySelectorAll("#symChips [data-sym]").forEach(b=>b.classList.toggle("on",(log.symptoms||[]).includes(b.dataset.sym)));
+  document.getElementById("dayNotes").value=log.notes||"";
+  const studyMin=S.forest.filter(f=>f.completed && f.date===dateStr).reduce((a,b)=>a+b.minutes,0);
+  const sessions=S.forest.filter(f=>f.completed && f.date===dateStr);
+  document.getElementById("dayStudySummary").textContent = sessions.length
+    ? `${studyMin} minutes across ${sessions.length} session${sessions.length>1?"s":""} — logged automatically from the Forest tab.`
+    : "No focus sessions logged this day yet.";
+  daySheetOverlay.classList.add("on");
+}
+document.getElementById("calGrid").addEventListener("click",e=>{
+  const c=e.target.closest("[data-date]"); if(!c)return;
+  openDaySheet(c.dataset.date);
+});
+document.getElementById("flowChips").addEventListener("click",e=>{ const b=e.target.closest("[data-flow]"); if(!b)return;
+  document.querySelectorAll("#flowChips [data-flow]").forEach(x=>x.classList.toggle("on",x===b)); Haptics.tap(); });
+document.getElementById("crampChips").addEventListener("click",e=>{ const b=e.target.closest("[data-cramp]"); if(!b)return;
+  document.querySelectorAll("#crampChips [data-cramp]").forEach(x=>x.classList.toggle("on",x===b)); Haptics.tap(); });
+document.getElementById("symChips").addEventListener("click",e=>{ const b=e.target.closest("[data-sym]"); if(!b)return;
+  b.classList.toggle("on"); Haptics.tap(); });
+document.getElementById("dayClose").onclick=()=>{ daySheetOverlay.classList.remove("on"); };
+document.getElementById("daySave").onclick=()=>{
+  const flow=document.querySelector("#flowChips .on")?.dataset.flow||"";
+  const cramp=+ (document.querySelector("#crampChips .on")?.dataset.cramp||0);
+  const symptoms=[...document.querySelectorAll("#symChips .on")].map(b=>b.dataset.sym);
+  S.logs[sheetDate]={
+    flow, cramp,
+    sleep: document.getElementById("sleepInput").value,
+    water: document.getElementById("waterInput").value,
+    symptoms,
+    notes: document.getElementById("dayNotes").value
+  };
+  if(flow && !S.cycleStarts.includes(sheetDate)){
+    // logging a flow on a day not already marked can help predictions without forcing "period started today"
+  }
+  save(); daySheetOverlay.classList.remove("on"); drawCalendar(); drawMonthStats();
+  addPoints(6,"Logged — future-you will be glad you did this");
+};
+
+/* ---- monthly stats ---- */
+function drawMonthStats(){
+  const y=calView.getFullYear(), m=calView.getMonth();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  let studyMin=0, sleepSum=0, sleepN=0, symCount={}, moodCount={}, loggedDays=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=new Date(y,m,d).toISOString().slice(0,10);
+    studyMin+=S.forest.filter(f=>f.completed && f.date===dateStr).reduce((a,b)=>a+b.minutes,0);
+    const log=S.logs[dateStr];
+    if(log){
+      loggedDays++;
+      if(log.sleep){ sleepSum+=parseFloat(log.sleep)||0; sleepN++; }
+      (log.symptoms||[]).forEach(s=>symCount[s]=(symCount[s]||0)+1);
+    }
+    if(S.moods[dateStr]!=null) moodCount[S.moods[dateStr]]=(moodCount[S.moods[dateStr]]||0)+1;
+  }
+  const topSym=Object.entries(symCount).sort((a,b)=>b[1]-a[1])[0];
+  const topMoodIdx=Object.entries(moodCount).sort((a,b)=>b[1]-a[1])[0];
+  const hrs=Math.floor(studyMin/60), mins=studyMin%60;
+  document.getElementById("monthStats").innerHTML=`
+    <div class="stat"><b>${hrs}h ${mins}m</b><small>focused / studied</small></div>
+    <div class="stat"><b>${sleepN? (sleepSum/sleepN).toFixed(1):"–"}</b><small>avg sleep (hrs)</small></div>
+    <div class="stat"><b>${loggedDays}</b><small>days logged</small></div>
+    <div class="stat"><b>${topSym? topSym[0]:"–"}</b><small>most common symptom</small></div>`;
+}
+
+/* ================= DOCTOR — an interactive check-in, not a wall of text ================= */
+const QUIZ=[
+  { q:"Does the pain stop you doing normal things today?", opts:["No","A little","A lot"] },
+  { q:"Painkillers, taken early and properly — do they help?", opts:["Haven't needed to","Yes, they help","Not really"] },
+  { q:"Any pain during or after sex, or with bowel/bladder movements?", opts:["No","Yes"] },
+  { q:"Right now — any fever, fainting, or bleeding soaking a pad/tampon every hour?", opts:["No","Yes"] },
+  { q:"Is it getting worse cycle after cycle, rather than staying about the same?", opts:["No","Not sure","Yes"] },
+];
+let quizAnswers=[];
+function drawQuiz(){
+  document.getElementById("outcomeCard").style.display="none";
+  document.getElementById("quizCard").style.display="";
+  quizAnswers=[];
+  const step=quizAnswers.length;
+  renderQuizStep();
+}
+function renderQuizStep(){
+  const i=quizAnswers.length;
+  const box=document.getElementById("quizBox");
+  if(i>=QUIZ.length){ showOutcome(); return; }
+  const q=QUIZ[i];
+  box.innerHTML=`
+    <p class="hint" style="margin-bottom:4px">Question ${i+1} of ${QUIZ.length}</p>
+    <div class="bar" style="margin-bottom:16px"><i style="width:${(i/QUIZ.length*100)}%"></i></div>
+    <div style="font-size:17px;line-height:1.6;margin-bottom:14px">${q.q}</div>
+    <div class="chipset" id="quizChips" style="justify-content:center">
+      ${q.opts.map((o,oi)=>`<button data-o="${oi}" style="padding:12px 18px;font-size:14px">${o}</button>`).join("")}
+    </div>`;
+  document.getElementById("quizChips").addEventListener("click",e=>{
+    const b=e.target.closest("[data-o]"); if(!b)return;
+    quizAnswers.push({q:q.q, a:q.opts[+b.dataset.o], idx:+b.dataset.o});
+    Haptics.tap(); renderQuizStep();
+  });
+}
+function buildContext(){
+  const len=avgCycleLength();
+  const cutoff=new Date(); cutoff.setMonth(cutoff.getMonth()-3);
+  const recentLogs=Object.entries(S.logs).filter(([d])=>new Date(d)>=cutoff);
+  const severeDays=recentLogs.filter(([,l])=>l.cramp>=2).length;
+  const symCount={};
+  recentLogs.forEach(([,l])=>(l.symptoms||[]).forEach(s=>symCount[s]=(symCount[s]||0)+1));
+  const topSymptoms=Object.entries(symCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  return { len, severeDays, topSymptoms, loggedMonths: Math.max(1, Math.round((Date.now()-new Date(recentLogs[0]?.[0]||Date.now()))/2.6e9)) };
+}
+function showOutcome(){
+  document.getElementById("quizCard").style.display="none";
+  const card=document.getElementById("outcomeCard"); card.style.display="";
+  const emergency = quizAnswers[3].idx===1;
+  const concerning = quizAnswers[0].idx===2 || quizAnswers[1].idx===2 || quizAnswers[2].idx===1 || quizAnswers[4].idx===2;
+  const ctx=buildContext();
+  let title, body, msg, level;
+  if(emergency){
+    level="emergency"; title="🚨 Get seen today";
+    body=`<div class="tip"><em>🚨</em><div><small>Fever, fainting, or heavy soaking bleeding with pain isn't something to wait out. Go to urgent care or A&E today, or call your local emergency number — especially if there's any chance you could be pregnant and the pain is one-sided, which can mean an ectopic pregnancy and needs immediate care.</small></div></div>
+      <div class="tip"><em>💗</em><div><small>Tell whoever you're with, or call someone, before you go. You shouldn't have to manage this alone.</small></div></div>`;
+    msg=`I'm not okay right now — I have period pain along with [fever / fainting / very heavy bleeding], and I think I need to be seen today. Can you help me get to urgent care?`;
+  } else if(concerning){
+    level="concerning"; title="Worth booking an appointment";
+    body=`<div class="tip"><em>📋</em><div><small>Based on what you just answered, this isn't just "bad period pain to push through" — it's worth a proper appointment. None of this is rare, none of it is your fault: endometriosis, adenomyosis, fibroids and PCOS are common and diagnosable, and a normal scan does not rule out endometriosis.</small></div></div>
+      <div class="tip"><em>🗣️</em><div><small>Lead with function, not just pain: "I missed X days of ${["life","school","work"][0]} last month" lands better than "it really hurts". Ask directly: "could this be endometriosis or adenomyosis, and what would rule it out?"</small></div></div>
+      <div class="tip"><em>💡</em><div><small>You're allowed to ask for a referral, a second opinion, or to take someone with you. You know your own body better than anyone in that room.</small></div></div>`;
+    msg=`I've been having period pain that's more than "normal" for me — ${quizAnswers[0].a==="A lot"?"it stops me doing normal things":""}${quizAnswers[1].a==="Not really"?" painkillers taken properly aren't helping,":""}${quizAnswers[2].a==="Yes"?" I get pain with sex or bowel/bladder movements,":""}${quizAnswers[4].a==="Yes"?" and it's been getting worse each cycle.":"."} My average cycle length is about ${ctx.len} days${ctx.severeDays?`, and I've logged ${ctx.severeDays} day(s) of severe cramping in the last few months`:""}${ctx.topSymptoms.length?`, most often with ${ctx.topSymptoms.join(", ")}`:""}. Could I get checked for things like endometriosis or adenomyosis?`;
+  } else {
+    level="ok"; title="Sounds like ordinary period pain, for now";
+    body=`<div class="tip"><em>💗</em><div><small>Nothing in your answers is raising a flag right now — that doesn't mean it doesn't hurt, just that it fits the common, manageable pattern. Heat, the guided relief sessions, and painkillers taken early are your best tools — head to the Relief tab.</small></div></div>
+      <div class="tip"><em>🔁</em><div><small>Come back and do this check-in again if anything changes — worse pain, new symptoms, or painkillers stop working the way they used to.</small></div></div>`;
+    msg=`Just tracking: did the Soft Days check-in today, nothing concerning came up. Average cycle length about ${ctx.len} days.`;
+  }
+  document.getElementById("outcomeTitle").textContent=title;
+  document.getElementById("outcomeBody").innerHTML=body;
+  document.getElementById("copyConfirm").textContent="";
+  document.getElementById("copyMsgBtn").onclick=async ()=>{
+    try{
+      await navigator.clipboard.writeText(msg);
+      document.getElementById("copyConfirm").textContent="Copied. Paste it to whoever you need to — you don't have to add anything else.";
+    }catch(e){
+      const ta=document.createElement("textarea"); ta.value=msg; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try{ document.execCommand("copy"); document.getElementById("copyConfirm").textContent="Copied."; }
+      catch(e2){ document.getElementById("copyConfirm").textContent=msg; }
+      ta.remove();
+    }
+    Haptics.confirm();
+  };
+  if(level==="emergency") Haptics.play([200,120,200,120,200]); else addPoints(6,"Checked in with your body — that's a real thing to do");
+}
+document.getElementById("retakeQuiz").onclick=drawQuiz;
+drawQuiz();
+
+/* ================= PANIC BUTTON ================= */
+const panicOverlay=document.getElementById("panicOverlay");
+document.getElementById("panic").onclick=()=>{ panicOverlay.classList.add("on"); Sound.unlock(); };
+document.getElementById("panicClose").onclick=()=>{ panicOverlay.classList.remove("on"); Haptics.stopLoop(); };
+document.getElementById("panicStart").onclick=function(){
+  this.style.display="none";
+  const line=document.getElementById("panicLine"), bar=document.getElementById("panicBar");
+  const lines=["Cold water on your face, or a cold pack — eyes, cheekbones, temples.","Hold it. Count slowly to twenty.",
+    "Come up. Breathe normally for a second.","In through your nose — 4.","Out through your mouth, slow — 8. Shoulders drop.",
+    "Again — in for 4.","Out for 8.","One more. In for 4.","Out for 8. That's a real drop in heart rate you just caused, on purpose."];
+  const t=[6,20,5,4,8,4,8,4,8];
+  let i=0;
+  const tone=Sound.breathTone(4,0,8);
+  const step=()=>{
+    line.textContent=lines[i]; srSay(lines[i]); Haptics.play(600);
+    bar.style.transition="none"; bar.style.width="0%";
+    requestAnimationFrame(()=>{ bar.style.transition=`width ${t[i]}s linear`; bar.style.width="100%"; });
+    i++;
+    if(i<lines.length) setTimeout(step, t[i-1]*1000);
+    else setTimeout(()=>{ line.textContent="Heat and SP6 pressure are in the Relief tab if you want to keep going. You did the fast part already."; document.getElementById("panicStart").style.display=""; document.getElementById("panicStart").textContent="Do it again"; }, t[i-1]*1000);
+  };
+  step();
+};
+
+/* ================= NAV ================= */
+let readySand=false, readyKaleido=false, readyKoi=false, readyBlob=false, readyStars=false;
+function ensurePlayCanvases(){
+  requestAnimationFrame(()=>{
+    if(!readySand && sandCanvas.clientWidth>0){ sizeSand(); readySand=true; }
+    if(!readyKaleido && kCanvas.clientWidth>0){ sizeKaleido(); readyKaleido=true; }
+    if(!readyKoi && koiCanvas.clientWidth>0){ sizeKoi(); koiFrame(); readyKoi=true; }
+    if(!readyBlob && blobCanvas.clientWidth>0){ sizeBlob(); blobFrame(); readyBlob=true; }
+    if(!readyStars && starsCanvas.clientWidth>0){ sizeStars(); drawSky(); readyStars=true; }
+  });
+}
+document.getElementById("nav").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  if(b.dataset.p!=="home") clearMoodResponse();
+  document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("on",p.id===b.dataset.p));
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(b.dataset.p==="play") ensurePlayCanvases();
+});
+
+render();
+</script>
+</body>
+</html>
